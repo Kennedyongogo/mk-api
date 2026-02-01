@@ -19,17 +19,16 @@ const chatbotRoutes = require("./routes/chatbotRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 const memberRoutes = require("./routes/memberRoutes");
-const lodgeRoutes = require("./routes/lodgeRoutes");
-const packageRoutes = require("./routes/packageRoutes");
-const routeStageRoutes = require("./routes/routeStageRoutes");
-const destinationRoutes = require("./routes/destinationRoutes");
-const galleryRoutes = require("./routes/galleryRoutes");
-const travellerGalleryRoutes = require("./routes/travellerGalleryRoutes");
 const interestGalleryRoutes = require("./routes/interestGalleryRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const formRoutes = require("./routes/formRoutes");
 const formFieldRoutes = require("./routes/formFieldRoutes");
-const packageInquiryRoutes = require("./routes/packageInquiryRoutes");
+const serviceRoutes = require("./routes/serviceRoutes");
+const projectRoutes = require("./routes/projectRoutes");
+const faqRoutes = require("./routes/faqRoutes");
+const contactRoutes = require("./routes/contactRoutes");
+const quoteRoutes = require("./routes/quoteRoutes");
+const consultationRoutes = require("./routes/consultationRoutes");
 
 const app = express();
 
@@ -42,15 +41,11 @@ app.use(cors());
 const profilesUploadPath = path.join(__dirname, "..", "uploads", "profiles");
 const documentsUploadPath = path.join(__dirname, "..", "uploads", "documents");
 const authorsUploadPath = path.join(__dirname, "..", "uploads", "authors");
-const lodgesUploadPath = path.join(__dirname, "..", "uploads", "lodges");
-const packagesUploadPath = path.join(__dirname, "..", "uploads", "packages");
-const stagesUploadPath = path.join(__dirname, "..", "uploads", "stages");
-const destinationsUploadPath = path.join(__dirname, "..", "uploads", "destinations");
-const galleryUploadPath = path.join(__dirname, "..", "uploads", "gallery");
-const travellerGalleryUploadPath = path.join(__dirname, "..", "uploads", "traveller-gallery");
 const interestGalleryUploadPath = path.join(__dirname, "..", "uploads", "interest-gallery");
 const miscUploadPath = path.join(__dirname, "..", "uploads", "misc");
 const postsUploadPath = path.join(__dirname, "..", "uploads", "posts");
+const servicesUploadPath = path.join(__dirname, "..", "uploads", "services");
+const projectsUploadPath = path.join(__dirname, "..", "uploads", "projects");
 
 console.log("📁 Upload Paths:");
 console.log(
@@ -72,24 +67,6 @@ console.log(
   fs.existsSync(authorsUploadPath)
 );
 console.log(
-  "  - Lodges:",
-  lodgesUploadPath,
-  "- Exists:",
-  fs.existsSync(lodgesUploadPath)
-);
-console.log(
-  "  - Gallery:",
-  galleryUploadPath,
-  "- Exists:",
-  fs.existsSync(galleryUploadPath)
-);
-console.log(
-  "  - Traveller Gallery:",
-  travellerGalleryUploadPath,
-  "- Exists:",
-  fs.existsSync(travellerGalleryUploadPath)
-);
-console.log(
   "  - Interest Gallery:",
   interestGalleryUploadPath,
   "- Exists:",
@@ -107,20 +84,22 @@ console.log(
   "- Exists:",
   fs.existsSync(postsUploadPath)
 );
+console.log(
+  "  - Services:",
+  servicesUploadPath,
+  "- Exists:",
+  fs.existsSync(servicesUploadPath)
+);
 
 // Serve static files
 app.use("/uploads/profiles", express.static(profilesUploadPath));
 app.use("/uploads/documents", express.static(documentsUploadPath));
 app.use("/uploads/authors", express.static(authorsUploadPath));
-app.use("/uploads/lodges", express.static(lodgesUploadPath));
-app.use("/uploads/packages", express.static(packagesUploadPath));
-app.use("/uploads/stages", express.static(stagesUploadPath));
-app.use("/uploads/destinations", express.static(destinationsUploadPath));
-app.use("/uploads/gallery", express.static(galleryUploadPath));
-app.use("/uploads/traveller-gallery", express.static(travellerGalleryUploadPath));
 app.use("/uploads/interest-gallery", express.static(interestGalleryUploadPath));
 app.use("/uploads/misc", express.static(miscUploadPath));
 app.use("/uploads/posts", express.static(postsUploadPath));
+app.use("/uploads/services", express.static(servicesUploadPath));
+app.use("/uploads/projects", express.static(projectsUploadPath));
 
 // API routes
 console.log("🔗 Registering API routes...");
@@ -149,20 +128,27 @@ console.log("✅ /api/chatbot route registered");
 app.use("/api/members", memberRoutes);
 console.log("✅ /api/members route registered");
 
-app.use("/api/lodges", lodgeRoutes);
-app.use("/api/packages", packageRoutes);
-app.use("/api/route-stages", routeStageRoutes);
-app.use("/api/destinations", destinationRoutes);
-app.use("/api/gallery", galleryRoutes);
-app.use("/api/traveller-gallery", travellerGalleryRoutes);
 app.use("/api/interest-gallery", interestGalleryRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/forms", formRoutes);
 app.use("/api/form-fields", formFieldRoutes);
-app.use("/api/package-inquiries", packageInquiryRoutes);
-console.log("✅ /api/lodges route registered");
-console.log("✅ /api/uploads route registered");
-console.log("✅ /api/package-inquiries route registered");
+app.use("/api/services", serviceRoutes);
+console.log("✅ /api/services route registered");
+
+app.use("/api/projects", projectRoutes);
+console.log("✅ /api/projects route registered");
+
+app.use("/api/faqs", faqRoutes);
+console.log("✅ /api/faqs route registered");
+
+app.use("/api/contact", contactRoutes);
+console.log("✅ /api/contact route registered");
+
+app.use("/api/quote", quoteRoutes);
+console.log("✅ /api/quote route registered");
+
+app.use("/api/consultation", consultationRoutes);
+console.log("✅ /api/consultation route registered");
 
 // Forgot password endpoint
 app.post("/api/auth/forgot", async (req, res) => {
@@ -279,10 +265,6 @@ const createUploadDirectories = () => {
     path.join(__dirname, "..", "uploads"),
     path.join(__dirname, "..", "uploads", "profiles"),
     path.join(__dirname, "..", "uploads", "documents"),
-    path.join(__dirname, "..", "uploads", "lodges"),
-    path.join(__dirname, "..", "uploads", "stages"),
-    path.join(__dirname, "..", "uploads", "gallery"),
-    path.join(__dirname, "..", "uploads", "traveller-gallery"),
     path.join(__dirname, "..", "uploads", "interest-gallery"),
     path.join(__dirname, "..", "uploads", "misc"),
   ];

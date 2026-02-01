@@ -45,12 +45,6 @@ module.exports = (sequelize) => {
           "review",
           "blog",
           "member",
-          "package",
-          "package_inquiry",
-          "route_stage",
-          "destination",
-          "gallery",
-          "traveller_gallery",
           "interest_gallery",
           "system",
           "other"

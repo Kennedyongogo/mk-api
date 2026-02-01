@@ -7,14 +7,13 @@ const AuditTrail = require("./auditTrail")(sequelize);
 const Review = require("./review")(sequelize);
 const Blog = require("./blog")(sequelize);
 const Member = require("./member")(sequelize);
-const Lodge = require("./lodge")(sequelize);
-const Package = require("./package")(sequelize);
-const RouteStage = require("./routeStage")(sequelize);
-const Destination = require("./destination")(sequelize);
-const Gallery = require("./gallery")(sequelize);
-const TravellerGallery = require("./travellerGallery")(sequelize);
+const Service = require("./service")(sequelize);
+const Project = require("./project")(sequelize);
+const FAQ = require("./faq")(sequelize);
+const Contact = require("./contact")(sequelize);
+const QuoteRequest = require("./quoteRequest")(sequelize);
+const Consultation = require("./consultation")(sequelize);
 const InterestGallery = require("./interestGallery")(sequelize);
-const PackageInquiry = require("./packageInquiry")(sequelize);
 
 // Dynamic Form Models
 const Form = require("./form")(sequelize);
@@ -29,14 +28,13 @@ const models = {
   Review,
   Blog,
   Member,
-  Lodge,
-  Package,
-  RouteStage,
-  Destination,
-  Gallery,
-  TravellerGallery,
+  Service,
+  Project,
+  FAQ,
+  Contact,
+  QuoteRequest,
+  Consultation,
   InterestGallery,
-  PackageInquiry,
   // Dynamic Form Models
   Form,
   FormField,
@@ -57,14 +55,13 @@ const initializeModels = async () => {
     await Review.sync({ force: false, alter: false });
     await Blog.sync({ force: false, alter: false });
     await Member.sync({ force: false, alter: false });
-    await Lodge.sync({ force: false, alter: false });
-    await Package.sync({ force: false, alter: false });
-    await RouteStage.sync({ force: false, alter: false });
-    await Destination.sync({ force: false, alter: false });
-    await Gallery.sync({ force: false, alter: false });
-    await TravellerGallery.sync({ force: false, alter: false });
+    await Service.sync({ force: false, alter: false });
+    await Project.sync({ force: false, alter: false });
+    await FAQ.sync({ force: false, alter: false });
+    await Contact.sync({ force: false, alter: false });
+    await QuoteRequest.sync({ force: false, alter: false });
+    await Consultation.sync({ force: false, alter: false });
     await InterestGallery.sync({ force: false, alter: false });
-    await PackageInquiry.sync({ force: false, alter: false });
 
     // Dynamic Form Models
     await Form.sync({ force: false, alter: false });
@@ -118,53 +115,91 @@ const setupAssociations = () => {
       as: "creator",
     });
 
-    // Package → RouteStage (1:Many)
-    models.Package.hasMany(models.RouteStage, {
-      foreignKey: "packageId",
-      as: "routeStages",
-      onDelete: "CASCADE",
-    });
-    models.RouteStage.belongsTo(models.Package, {
-      foreignKey: "packageId",
-      as: "package",
-    });
-
-    // Gallery Associations
-    models.AdminUser.hasMany(models.Gallery, {
+    // AdminUser → Service (1:Many)
+    models.AdminUser.hasMany(models.Service, {
       foreignKey: "created_by",
-      as: "createdGalleryItems",
+      as: "createdServices",
     });
-    models.Gallery.belongsTo(models.AdminUser, {
+    models.Service.belongsTo(models.AdminUser, {
       foreignKey: "created_by",
       as: "creator",
     });
 
-    models.AdminUser.hasMany(models.Gallery, {
+    models.AdminUser.hasMany(models.Service, {
       foreignKey: "updated_by",
-      as: "updatedGalleryItems",
+      as: "updatedServices",
     });
-    models.Gallery.belongsTo(models.AdminUser, {
+    models.Service.belongsTo(models.AdminUser, {
       foreignKey: "updated_by",
       as: "updater",
     });
 
-    // TravellerGallery Associations
-    models.AdminUser.hasMany(models.TravellerGallery, {
+    // AdminUser → Project (1:Many)
+    models.AdminUser.hasMany(models.Project, {
       foreignKey: "created_by",
-      as: "createdTravellerGalleryItems",
+      as: "createdProjects",
     });
-    models.TravellerGallery.belongsTo(models.AdminUser, {
+    models.Project.belongsTo(models.AdminUser, {
       foreignKey: "created_by",
       as: "creator",
     });
 
-    models.AdminUser.hasMany(models.TravellerGallery, {
+    models.AdminUser.hasMany(models.Project, {
       foreignKey: "updated_by",
-      as: "updatedTravellerGalleryItems",
+      as: "updatedProjects",
     });
-    models.TravellerGallery.belongsTo(models.AdminUser, {
+    models.Project.belongsTo(models.AdminUser, {
       foreignKey: "updated_by",
       as: "updater",
+    });
+
+    // AdminUser → FAQ (1:Many)
+    models.AdminUser.hasMany(models.FAQ, {
+      foreignKey: "created_by",
+      as: "createdFAQs",
+    });
+    models.FAQ.belongsTo(models.AdminUser, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+
+    models.AdminUser.hasMany(models.FAQ, {
+      foreignKey: "updated_by",
+      as: "updatedFAQs",
+    });
+    models.FAQ.belongsTo(models.AdminUser, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+
+    // AdminUser → Contact (1:Many)
+    models.AdminUser.hasMany(models.Contact, {
+      foreignKey: "reviewedBy",
+      as: "reviewedContacts",
+    });
+    models.Contact.belongsTo(models.AdminUser, {
+      foreignKey: "reviewedBy",
+      as: "reviewer",
+    });
+
+    // AdminUser → QuoteRequest (1:Many)
+    models.AdminUser.hasMany(models.QuoteRequest, {
+      foreignKey: "reviewedBy",
+      as: "reviewedQuoteRequests",
+    });
+    models.QuoteRequest.belongsTo(models.AdminUser, {
+      foreignKey: "reviewedBy",
+      as: "reviewer",
+    });
+
+    // AdminUser → Consultation (1:Many)
+    models.AdminUser.hasMany(models.Consultation, {
+      foreignKey: "reviewedBy",
+      as: "reviewedConsultations",
+    });
+    models.Consultation.belongsTo(models.AdminUser, {
+      foreignKey: "reviewedBy",
+      as: "reviewer",
     });
 
     // InterestGallery Associations
@@ -184,26 +219,6 @@ const setupAssociations = () => {
     models.InterestGallery.belongsTo(models.AdminUser, {
       foreignKey: "updated_by",
       as: "updater",
-    });
-
-    // Gallery → Package (optional)
-    models.Package.hasMany(models.Gallery, {
-      foreignKey: "packageId",
-      as: "galleryItems",
-    });
-    models.Gallery.belongsTo(models.Package, {
-      foreignKey: "packageId",
-      as: "package",
-    });
-
-    // Gallery → Destination (optional)
-    models.Destination.hasMany(models.Gallery, {
-      foreignKey: "destinationId",
-      as: "galleryItems",
-    });
-    models.Gallery.belongsTo(models.Destination, {
-      foreignKey: "destinationId",
-      as: "destination",
     });
 
     // Dynamic Form Associations
@@ -267,26 +282,6 @@ const setupAssociations = () => {
     models.FormSubmission.belongsTo(models.AdminUser, {
       foreignKey: "reviewed_by",
       as: "reviewer",
-    });
-
-    // PackageInquiry → Destination
-    models.PackageInquiry.belongsTo(models.Destination, {
-      foreignKey: "destination_id",
-      as: "destination",
-    });
-    models.Destination.hasMany(models.PackageInquiry, {
-      foreignKey: "destination_id",
-      as: "inquiries",
-    });
-
-    // PackageInquiry → AdminUser (replied_by)
-    models.PackageInquiry.belongsTo(models.AdminUser, {
-      foreignKey: "replied_by",
-      as: "replier",
-    });
-    models.AdminUser.hasMany(models.PackageInquiry, {
-      foreignKey: "replied_by",
-      as: "repliedInquiries",
     });
 
     console.log("✅ All associations set up successfully");

@@ -27,9 +27,9 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       featuredImage: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(500),
         allowNull: true,
-        comment: "Uploaded featured/hero image path",
+        comment: "Uploaded featured/hero image path (relative path from uploads directory)",
       },
       heroAltText: {
         type: DataTypes.STRING,
@@ -37,11 +37,13 @@ module.exports = (sequelize) => {
       },
       category: {
         type: DataTypes.ENUM(
-          "Wildlife",
-          "Travel Tips",
-          "Conservation",
-          "Photography",
-          "Guides",
+          "Agri-Finance",
+          "Agri-Tech",
+          "Climate-Smart",
+          "Livestock",
+          "Regenerative",
+          "Marketing",
+          "Sustainable Tech",
           "Other"
         ),
         allowNull: true,
@@ -68,8 +70,9 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       authorImage: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(500),
         allowNull: true,
+        comment: "Author image path (relative path from uploads directory)",
       },
       authorBio: {
         type: DataTypes.TEXT,
@@ -128,8 +131,9 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       ogImage: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(500),
         allowNull: true,
+        comment: "Open Graph image path (relative path from uploads directory)",
       },
       canonicalUrl: {
         type: DataTypes.STRING,

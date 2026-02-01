@@ -17,6 +17,16 @@ const storage = multer.diskStorage({
     ) {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "documents");
     } else if (
+      file.fieldname === "service_image" ||
+      file.fieldname === "service_images"
+    ) {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "services");
+    } else if (
+      file.fieldname === "project_image" ||
+      file.fieldname === "project_images"
+    ) {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "projects");
+    } else if (
       file.fieldname === "image" ||
       file.fieldname === "images"
     ) {
@@ -28,40 +38,6 @@ const storage = multer.diskStorage({
       uploadPath = path.join(__dirname, "..", "..", "uploads", "posts");
     } else if (file.fieldname === "author_image") {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "authors");
-    } else if (
-      file.fieldname === "lodge_image" ||
-      file.fieldname === "lodge_images" ||
-      file.fieldname === "lodge_gallery"
-    ) {
-      uploadPath = path.join(__dirname, "..", "..", "uploads", "lodges");
-    } else if (
-      file.fieldname === "stage_image" ||
-      file.fieldname === "stage_images"
-    ) {
-      uploadPath = path.join(__dirname, "..", "..", "uploads", "stages");
-    } else if (
-      file.fieldname === "hero_image" ||
-      file.fieldname === "gallery_images" ||
-      file.fieldname.startsWith("attraction_images_") ||
-      file.fieldname.startsWith("package_gallery_") ||
-      file.fieldname === "destination_image" ||
-      file.fieldname === "destination_images"
-    ) {
-      uploadPath = path.join(__dirname, "..", "..", "uploads", "destinations");
-    } else if (
-      file.fieldname === "gallery_image" ||
-      file.fieldname === "gallery_video" ||
-      file.fieldname === "gallery_media"
-    ) {
-      uploadPath = path.join(__dirname, "..", "..", "uploads", "gallery");
-    } else if (file.fieldname === "traveller_gallery_media") {
-      uploadPath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "uploads",
-        "traveller-gallery"
-      );
     } else if (file.fieldname === "interest_gallery_media") {
       uploadPath = path.join(
         __dirname,
@@ -176,52 +152,14 @@ const uploadMixed = upload.fields([
   { name: "documents", maxCount: 10 },
 ]);
 
-// Middleware for lodge images
-const uploadLodgeImage = upload.single("lodge_image");
-const uploadLodgeImages = upload.array("lodge_images", 10);
-const uploadLodgeGallery = upload.array("lodge_gallery", 10);
-
-// Middleware for package images
-const uploadPackageImage = upload.single("image");
-
-// Middleware for destination images (hero + gallery + package galleries)
-// Package gallery format: package_gallery_<categoryIndex>_<packageIndex>
-// Supports up to 10 categories with 20 packages each, 10 images per package
-const uploadDestinationImages = upload.fields([
-  { name: "hero_image", maxCount: 1 },
-  { name: "gallery_images", maxCount: 10 },
-  // Support package gallery images: package_gallery_<categoryIndex>_<packageIndex>
-  ...Array.from({ length: 10 }, (_, catIndex) =>
-    Array.from({ length: 20 }, (_, pkgIndex) => ({
-      name: `package_gallery_${catIndex}_${pkgIndex}`,
-      maxCount: 10 // Allow up to 10 images per package gallery
-    }))
-  ).flat()
-]);
-
-// Middleware for single destination image
-const uploadDestinationImage = upload.single("destination_image");
-
-// Middleware for multiple destination images
-const uploadDestinationGallery = upload.array("gallery_images", 10);
-
-// Middleware for gallery images
-const uploadGalleryImage = upload.single("gallery_image");
-
-// Middleware for gallery videos
-const uploadGalleryVideo = upload.single("gallery_video");
-
-// Middleware for gallery media (single file - either image or video)
-const uploadGalleryMedia = upload.single("gallery_media");
-
-// Middleware for traveller gallery media (single file - either image or video)
-const uploadTravellerGalleryMedia = upload.single("traveller_gallery_media");
-
 // Middleware for interest gallery media (single file - either image or video)
 const uploadInterestGalleryMedia = upload.single("interest_gallery_media");
 
-// Middleware for multiple gallery items
-const uploadGalleryItems = upload.array("gallery_items", 20);
+// Middleware for service image
+const uploadServiceImage = upload.single("service_image");
+
+// Middleware for project image
+const uploadProjectImage = upload.single("project_image");
 
 // Error handling middleware for multer
 const handleUploadError = (error, req, res, next) => {
@@ -308,19 +246,9 @@ module.exports = {
   uploadBlogImage,
   uploadBlogAssets,
   uploadMixed,
-  uploadLodgeImage,
-  uploadLodgeImages,
-  uploadLodgeGallery,
-  uploadPackageImage,
-  uploadDestinationImages,
-  uploadDestinationImage,
-  uploadDestinationGallery,
-  uploadGalleryImage,
-  uploadGalleryVideo,
-  uploadGalleryMedia,
-  uploadTravellerGalleryMedia,
   uploadInterestGalleryMedia,
-  uploadGalleryItems,
+  uploadServiceImage,
+  uploadProjectImage,
   handleUploadError,
   deleteFile,
   getFileType,

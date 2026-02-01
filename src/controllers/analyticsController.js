@@ -5,11 +5,6 @@ const {
   Review,
   Blog,
   Member,
-  Lodge,
-  Package,
-  RouteStage,
-  Destination,
-  Gallery,
   Form,
   FormField,
   FieldOption,
@@ -160,70 +155,7 @@ const getSystemAnalytics = async (req, res) => {
       where: { createdAt: { [Op.gte]: thirtyDaysAgo } },
     });
 
-    // 7. Lodge Statistics
-    const totalLodges = await Lodge.count();
-    const lodgesByDestination = await Lodge.findAll({
-      attributes: ["destination", [sequelize.fn("COUNT", sequelize.col("id")), "count"]],
-      group: ["destination"],
-      raw: true,
-    });
-    const recentLodges = await Lodge.count({
-      where: { createdAt: { [Op.gte]: thirtyDaysAgo } },
-    });
-
-    // 8. Package Statistics
-    const totalPackages = await Package.count();
-    const packagesByType = await Package.findAll({
-      attributes: ["type", [sequelize.fn("COUNT", sequelize.col("id")), "count"]],
-      group: ["type"],
-      raw: true,
-    });
-    const activePackages = await Package.count({ where: { isActive: true } });
-    const avgPackageRating = await Package.findOne({
-      attributes: [[sequelize.fn("AVG", sequelize.col("rating")), "average"]],
-      raw: true,
-    });
-    const recentPackages = await Package.count({
-      where: { createdAt: { [Op.gte]: thirtyDaysAgo } },
-    });
-
-    // 9. RouteStage Statistics
-    const totalRouteStages = await RouteStage.count();
-    const recentRouteStages = await RouteStage.count({
-      where: { createdAt: { [Op.gte]: thirtyDaysAgo } },
-    });
-
-    // 10. Destination Statistics
-    const totalDestinations = await Destination.count();
-    const activeDestinations = await Destination.count({ where: { is_active: true } });
-    const destinationsByLocation = await Destination.findAll({
-      attributes: ["location", [sequelize.fn("COUNT", sequelize.col("id")), "count"]],
-      group: ["location"],
-      raw: true,
-    });
-    const recentDestinations = await Destination.count({
-      where: { createdAt: { [Op.gte]: thirtyDaysAgo } },
-    });
-
-    // 11. Gallery Statistics
-    const totalGalleryItems = await Gallery.count();
-    const galleryByType = await Gallery.findAll({
-      attributes: ["type", [sequelize.fn("COUNT", sequelize.col("id")), "count"]],
-      group: ["type"],
-      raw: true,
-    });
-    const galleryByCategory = await Gallery.findAll({
-      attributes: ["category", [sequelize.fn("COUNT", sequelize.col("id")), "count"]],
-      group: ["category"],
-      raw: true,
-    });
-    const featuredGalleryItems = await Gallery.count({ where: { isFeatured: true } });
-    const activeGalleryItems = await Gallery.count({ where: { isActive: true } });
-    const recentGalleryItems = await Gallery.count({
-      where: { createdAt: { [Op.gte]: thirtyDaysAgo } },
-    });
-
-    // 12. Form Statistics
+    // 7. Form Statistics
     const totalForms = await Form.count();
     const activeForms = await Form.count({ where: { is_active: true } });
     const recentForms = await Form.count({
@@ -263,11 +195,6 @@ const getSystemAnalytics = async (req, res) => {
           totalReviews,
           totalBlogs,
           totalMembers,
-          totalLodges,
-          totalPackages,
-          totalRouteStages,
-          totalDestinations,
-          totalGalleryItems,
           totalForms,
           totalFormFields,
           totalFieldOptions,
@@ -309,36 +236,6 @@ const getSystemAnalytics = async (req, res) => {
           byBusinessType: membersByBusinessType,
           recent: recentMembers,
         },
-        lodges: {
-          total: totalLodges,
-          byDestination: lodgesByDestination,
-          recent: recentLodges,
-        },
-        packages: {
-          total: totalPackages,
-          byType: packagesByType,
-          active: activePackages,
-          averageRating: parseFloat(avgPackageRating?.average || 0).toFixed(2),
-          recent: recentPackages,
-        },
-        routeStages: {
-          total: totalRouteStages,
-          recent: recentRouteStages,
-        },
-        destinations: {
-          total: totalDestinations,
-          active: activeDestinations,
-          byLocation: destinationsByLocation,
-          recent: recentDestinations,
-        },
-        gallery: {
-          total: totalGalleryItems,
-          byType: galleryByType,
-          byCategory: galleryByCategory,
-          featured: featuredGalleryItems,
-          active: activeGalleryItems,
-          recent: recentGalleryItems,
-        },
         forms: {
           total: totalForms,
           active: activeForms,
@@ -363,11 +260,6 @@ const getSystemAnalytics = async (req, res) => {
             reviews: recentReviews,
             blogs: recentBlogs,
             members: recentMembers,
-            lodges: recentLodges,
-            packages: recentPackages,
-            routeStages: recentRouteStages,
-            destinations: recentDestinations,
-            galleryItems: recentGalleryItems,
             forms: recentForms,
             formFields: recentFormFields,
             fieldOptions: recentFieldOptions,
@@ -421,11 +313,6 @@ const getMonthlyTrends = async (req, res) => {
       reviews,
       blogs,
       members,
-      lodges,
-      packages,
-      routeStages,
-      destinations,
-      galleryItems,
       forms,
       formFields,
       fieldOptions,
@@ -435,11 +322,6 @@ const getMonthlyTrends = async (req, res) => {
       Review.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
       Blog.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
       Member.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
-      Lodge.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
-      Package.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
-      RouteStage.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
-      Destination.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
-      Gallery.findAll({ attributes: ["createdAt"], where: { createdAt: { [Op.gte]: monthsAgo } }, raw: true }),
       Form.findAll({ attributes: [[sequelize.col("created_at"), "createdAt"]], where: { created_at: { [Op.gte]: monthsAgo } }, raw: true }),
       FormField.findAll({ attributes: [[sequelize.col("created_at"), "createdAt"]], where: { created_at: { [Op.gte]: monthsAgo } }, raw: true }),
       FieldOption.findAll({ attributes: [[sequelize.col("created_at"), "createdAt"]], where: { created_at: { [Op.gte]: monthsAgo } }, raw: true }),
@@ -453,11 +335,6 @@ const getMonthlyTrends = async (req, res) => {
         reviews: groupByMonth(reviews),
         blogs: groupByMonth(blogs),
         members: groupByMonth(members),
-        lodges: groupByMonth(lodges),
-        packages: groupByMonth(packages),
-        routeStages: groupByMonth(routeStages),
-        destinations: groupByMonth(destinations),
-        galleryItems: groupByMonth(galleryItems),
         forms: groupByMonth(forms),
         formFields: groupByMonth(formFields),
         fieldOptions: groupByMonth(fieldOptions),
