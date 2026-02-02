@@ -118,6 +118,12 @@ module.exports = (sequelize) => {
         defaultValue: [],
         comment: "Array of use case strings",
       },
+      relatedServiceIds: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: "Array of related service IDs (UUIDs)",
+      },
       // Analytics
       views: {
         type: DataTypes.INTEGER,

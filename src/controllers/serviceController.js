@@ -33,6 +33,7 @@ const createService = async (req, res) => {
       fullContent,
       benefits,
       useCases,
+      relatedServiceIds,
     } = req.body;
 
     // Validate required fields
@@ -43,10 +44,10 @@ const createService = async (req, res) => {
       });
     }
 
-    // Handle image upload
+    // Handle image upload (multer single puts file in req.file)
     let imagePath = null;
-    if (req.files && req.files.service_image && req.files.service_image[0]) {
-      imagePath = convertToRelativePath(req.files.service_image[0].path);
+    if (req.file && req.file.path) {
+      imagePath = convertToRelativePath(req.file.path);
     } else if (image) {
       imagePath = image;
     }
@@ -67,6 +68,7 @@ const createService = async (req, res) => {
 
     const benefitsArray = parseJsonArray(benefits);
     const useCasesArray = parseJsonArray(useCases);
+    const relatedIdsArray = parseJsonArray(relatedServiceIds);
 
     const service = await Service.create({
       slug,
@@ -88,6 +90,7 @@ const createService = async (req, res) => {
       fullContent,
       benefits: benefitsArray,
       useCases: useCasesArray,
+      relatedServiceIds: relatedIdsArray,
       views: 0,
       created_by: req.user?.id || null,
       updated_by: req.user?.id || null,
@@ -336,9 +339,9 @@ const updateService = async (req, res) => {
       });
     }
 
-    // Handle image upload
-    if (req.files && req.files.service_image && req.files.service_image[0]) {
-      updates.image = convertToRelativePath(req.files.service_image[0].path);
+    // Handle image upload (multer single puts file in req.file)
+    if (req.file && req.file.path) {
+      updates.image = convertToRelativePath(req.file.path);
       
       // Delete old image if it exists
       if (service.image) {
@@ -374,6 +377,10 @@ const updateService = async (req, res) => {
 
     if (updates.useCases !== undefined) {
       updates.useCases = parseJsonArray(updates.useCases);
+    }
+
+    if (updates.relatedServiceIds !== undefined) {
+      updates.relatedServiceIds = parseJsonArray(updates.relatedServiceIds);
     }
 
     // Convert boolean strings to booleans
@@ -412,6 +419,7 @@ const updateService = async (req, res) => {
         "service",
         service.id,
         { slug: service.slug, title: service.title },
+        updates,
         req
       );
     }
