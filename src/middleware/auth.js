@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { AdminUser } = require("../models");
+const { AdminUser, MarketplaceUser } = require("../models");
 const config = require("../config/config");
 
 // Authenticate admin users
@@ -54,6 +54,53 @@ exports.authenticateAdmin = async (req, res, next) => {
 
 // Alias for authenticateAdmin (for backward compatibility)
 exports.authenticateToken = exports.authenticateAdmin;
+
+// Authenticate marketplace users (public portal login)
+exports.authenticateMarketplace = async (req, res, next) => {
+  const authHeader = req.header("Authorization");
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Access denied, no token provided",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+
+    if (decoded.type !== "marketplace") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied, invalid token type",
+      });
+    }
+
+    const user = await MarketplaceUser.findByPk(decoded.id, {
+      attributes: { exclude: ["password"] },
+    });
+
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied, user not found",
+      });
+    }
+
+    req.userId = user.id;
+    req.user = user;
+    req.userType = "marketplace";
+
+    next();
+  } catch (error) {
+    console.error("Marketplace auth error:", error);
+    res.status(400).json({
+      success: false,
+      message: "Invalid or expired token",
+    });
+  }
+};
 
 // Optional authentication (for public endpoints that might need user info)
 exports.optionalAuth = async (req, res, next) => {

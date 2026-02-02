@@ -15,6 +15,8 @@ const QuoteRequest = require("./quoteRequest")(sequelize);
 const Consultation = require("./consultation")(sequelize);
 const NewsletterSubscriber = require("./newsletterSubscriber")(sequelize);
 const InterestGallery = require("./interestGallery")(sequelize);
+const MarketplaceUser = require("./marketplaceUser")(sequelize);
+const MarketplaceUserProfile = require("./marketplaceUserProfile")(sequelize);
 
 // Dynamic Form Models
 const Form = require("./form")(sequelize);
@@ -37,6 +39,8 @@ const models = {
   Consultation,
   NewsletterSubscriber,
   InterestGallery,
+  MarketplaceUser,
+  MarketplaceUserProfile,
   // Dynamic Form Models
   Form,
   FormField,
@@ -65,6 +69,8 @@ const initializeModels = async () => {
     await Consultation.sync({ force: false, alter: false });
     await NewsletterSubscriber.sync({ force: false, alter: false });
     await InterestGallery.sync({ force: false, alter: false });
+    await MarketplaceUser.sync({ force: false, alter: false });
+    await MarketplaceUserProfile.sync({ force: false, alter: false });
 
     // Dynamic Form Models
     await Form.sync({ force: false, alter: false });
@@ -222,6 +228,16 @@ const setupAssociations = () => {
     models.InterestGallery.belongsTo(models.AdminUser, {
       foreignKey: "updated_by",
       as: "updater",
+    });
+
+    // MarketplaceUser → MarketplaceUserProfile (1:1)
+    models.MarketplaceUser.hasOne(models.MarketplaceUserProfile, {
+      foreignKey: "userId",
+      as: "profile",
+    });
+    models.MarketplaceUserProfile.belongsTo(models.MarketplaceUser, {
+      foreignKey: "userId",
+      as: "user",
     });
 
     // Dynamic Form Associations

@@ -46,6 +46,8 @@ const storage = multer.diskStorage({
         "uploads",
         "interest-gallery"
       );
+    } else if (file.fieldname === "profile_photo") {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "marketplace-profiles");
     } else {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "misc");
     }
@@ -161,6 +163,9 @@ const uploadServiceImage = upload.single("service_image");
 // Middleware for project image
 const uploadProjectImage = upload.single("project_image");
 
+// Middleware for marketplace user profile photo (public portal)
+const uploadMarketplaceProfilePhoto = upload.single("profile_photo");
+
 // Error handling middleware for multer
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -249,6 +254,7 @@ module.exports = {
   uploadInterestGalleryMedia,
   uploadServiceImage,
   uploadProjectImage,
+  uploadMarketplaceProfilePhoto,
   handleUploadError,
   deleteFile,
   getFileType,

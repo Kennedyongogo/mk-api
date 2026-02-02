@@ -30,6 +30,8 @@ const contactRoutes = require("./routes/contactRoutes");
 const quoteRoutes = require("./routes/quoteRoutes");
 const consultationRoutes = require("./routes/consultationRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const marketplaceAuthRoutes = require("./routes/marketplaceAuthRoutes");
+const marketplaceProfileRoutes = require("./routes/marketplaceProfileRoutes");
 
 const app = express();
 
@@ -47,6 +49,7 @@ const miscUploadPath = path.join(__dirname, "..", "uploads", "misc");
 const postsUploadPath = path.join(__dirname, "..", "uploads", "posts");
 const servicesUploadPath = path.join(__dirname, "..", "uploads", "services");
 const projectsUploadPath = path.join(__dirname, "..", "uploads", "projects");
+const marketplaceProfilesUploadPath = path.join(__dirname, "..", "uploads", "marketplace-profiles");
 
 console.log("📁 Upload Paths:");
 console.log(
@@ -101,6 +104,7 @@ app.use("/uploads/misc", express.static(miscUploadPath));
 app.use("/uploads/posts", express.static(postsUploadPath));
 app.use("/uploads/services", express.static(servicesUploadPath));
 app.use("/uploads/projects", express.static(projectsUploadPath));
+app.use("/uploads/marketplace-profiles", express.static(marketplaceProfilesUploadPath));
 
 // API routes
 console.log("🔗 Registering API routes...");
@@ -153,6 +157,10 @@ console.log("✅ /api/consultation route registered");
 
 app.use("/api/newsletter", newsletterRoutes);
 console.log("✅ /api/newsletter route registered");
+
+app.use("/api/marketplace/auth", marketplaceAuthRoutes);
+app.use("/api/marketplace", marketplaceProfileRoutes);
+console.log("✅ /api/marketplace (auth + profile) routes registered");
 
 // Forgot password endpoint
 app.post("/api/auth/forgot", async (req, res) => {
@@ -271,6 +279,7 @@ const createUploadDirectories = () => {
     path.join(__dirname, "..", "uploads", "documents"),
     path.join(__dirname, "..", "uploads", "interest-gallery"),
     path.join(__dirname, "..", "uploads", "misc"),
+    path.join(__dirname, "..", "uploads", "marketplace-profiles"),
   ];
 
   uploadDirs.forEach((dir) => {
