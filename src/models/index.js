@@ -13,6 +13,7 @@ const FAQ = require("./faq")(sequelize);
 const Contact = require("./contact")(sequelize);
 const QuoteRequest = require("./quoteRequest")(sequelize);
 const Consultation = require("./consultation")(sequelize);
+const NewsletterSubscriber = require("./newsletterSubscriber")(sequelize);
 const InterestGallery = require("./interestGallery")(sequelize);
 
 // Dynamic Form Models
@@ -34,6 +35,7 @@ const models = {
   Contact,
   QuoteRequest,
   Consultation,
+  NewsletterSubscriber,
   InterestGallery,
   // Dynamic Form Models
   Form,
@@ -61,6 +63,7 @@ const initializeModels = async () => {
     await Contact.sync({ force: false, alter: false });
     await QuoteRequest.sync({ force: false, alter: false });
     await Consultation.sync({ force: false, alter: false });
+    await NewsletterSubscriber.sync({ force: false, alter: false });
     await InterestGallery.sync({ force: false, alter: false });
 
     // Dynamic Form Models

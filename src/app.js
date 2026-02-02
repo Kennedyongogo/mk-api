@@ -29,6 +29,7 @@ const faqRoutes = require("./routes/faqRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const quoteRoutes = require("./routes/quoteRoutes");
 const consultationRoutes = require("./routes/consultationRoutes");
+const newsletterRoutes = require("./routes/newsletterRoutes");
 
 const app = express();
 
@@ -149,6 +150,9 @@ console.log("✅ /api/quote route registered");
 
 app.use("/api/consultation", consultationRoutes);
 console.log("✅ /api/consultation route registered");
+
+app.use("/api/newsletter", newsletterRoutes);
+console.log("✅ /api/newsletter route registered");
 
 // Forgot password endpoint
 app.post("/api/auth/forgot", async (req, res) => {
