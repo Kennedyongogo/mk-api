@@ -125,6 +125,16 @@ module.exports = (sequelize) => {
         defaultValue: [],
         comment: "Array of impact metrics/statistics",
       },
+      farmersTrained: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: "Number of farmers trained in this project (for stats aggregation)",
+      },
+      roiIncreasePercent: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+        comment: "ROI increase percentage achieved (e.g. 25 for 25%)",
+      },
       // Map/Location data for CharityMap component
       latitude: {
         type: DataTypes.DECIMAL(10, 8),

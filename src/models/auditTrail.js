@@ -46,6 +46,10 @@ module.exports = (sequelize) => {
           "blog",
           "member",
           "interest_gallery",
+          "project",
+          "service",
+          "faq",
+          "contact",
           "system",
           "other"
         ),

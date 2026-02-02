@@ -6,6 +6,7 @@ const {
   getProjectById,
   getPublicProjects,
   getPublicProjectBySlug,
+  getPublicStats,
   updateProject,
   updateProjectStatus,
   updateProjectExecutionStatus,
@@ -25,6 +26,13 @@ const { errorHandler } = require("../middleware/errorHandler");
  * @access  Public
  */
 router.get("/public", getPublicProjects);
+
+/**
+ * @route   GET /api/projects/public/stats
+ * @desc    Get project statistics for public portal (total projects, farmers trained, avg ROI)
+ * @access  Public
+ */
+router.get("/public/stats", getPublicStats);
 
 /**
  * @route   GET /api/projects/public/:slug

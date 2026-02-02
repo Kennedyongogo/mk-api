@@ -1,4 +1,4 @@
-const { Project } = require("../models");
+const { Project, sequelize } = require("../models");
 const { convertToRelativePath } = require("../utils/filePath");
 const { Op } = require("sequelize");
 const path = require("path");
@@ -33,6 +33,8 @@ const createProject = async (req, res) => {
       startDate,
       endDate,
       impactMetrics,
+      farmersTrained,
+      roiIncreasePercent,
       latitude,
       longitude,
       metaTitle,
@@ -47,10 +49,10 @@ const createProject = async (req, res) => {
       });
     }
 
-    // Handle image upload
+    // Handle image upload (upload.single("project_image") puts file in req.file, not req.files)
     let imagePath = null;
-    if (req.files && req.files.project_image && req.files.project_image[0]) {
-      imagePath = convertToRelativePath(req.files.project_image[0].path);
+    if (req.file && req.file.path) {
+      imagePath = convertToRelativePath(req.file.path);
     } else if (image) {
       imagePath = image;
     }
@@ -114,6 +116,8 @@ const createProject = async (req, res) => {
       startDate,
       endDate,
       impactMetrics: impactMetricsArray,
+      farmersTrained: farmersTrained != null && farmersTrained !== "" ? parseInt(farmersTrained, 10) : null,
+      roiIncreasePercent: roiIncreasePercent != null && roiIncreasePercent !== "" ? parseFloat(roiIncreasePercent) : null,
       latitude: parsedLatitude,
       longitude: parsedLongitude,
       metaTitle,
@@ -336,6 +340,93 @@ const getPublicProjectBySlug = async (req, res) => {
   }
 };
 
+// Get public project statistics (for portal stats cards)
+const getPublicStats = async (req, res) => {
+  try {
+    const baseWhere = { status: "published" };
+    const now = new Date();
+    const thisYear = now.getFullYear();
+    const lastYear = thisYear - 1;
+    const startThisYear = new Date(thisYear, 0, 1);
+    const startLastYear = new Date(lastYear, 0, 1);
+    const endLastYear = new Date(thisYear, 0, 1);
+
+    // Total published projects
+    const totalProjects = await Project.count({ where: baseWhere });
+
+    // Projects created this year vs last year (for % change)
+    const [countThisYear, countLastYear] = await Promise.all([
+      Project.count({
+        where: { ...baseWhere, createdAt: { [Op.gte]: startThisYear } },
+      }),
+      Project.count({
+        where: {
+          ...baseWhere,
+          createdAt: { [Op.gte]: startLastYear, [Op.lt]: endLastYear },
+        },
+      }),
+    ]);
+    const totalProjectsChangePercent =
+      countLastYear > 0
+        ? Math.round(((countThisYear - countLastYear) / countLastYear) * 100)
+        : (countThisYear > 0 ? 100 : 0);
+
+    // Farmers trained: sum of farmersTrained across published projects
+    const farmersTrainedSum = (await Project.sum("farmersTrained", { where: baseWhere })) || 0;
+
+    // Farmers impact change: sum of farmersTrained for projects started this year vs last year
+    const [farmersThisYear, farmersLastYear] = await Promise.all([
+      Project.sum("farmersTrained", {
+        where: {
+          ...baseWhere,
+          startDate: { [Op.gte]: startThisYear },
+        },
+      }),
+      Project.sum("farmersTrained", {
+        where: {
+          ...baseWhere,
+          startDate: { [Op.gte]: startLastYear, [Op.lt]: endLastYear },
+        },
+      }),
+    ]);
+    const farmersThisYearNum = Number(farmersThisYear) || 0;
+    const farmersLastYearNum = Number(farmersLastYear) || 0;
+    const farmersTrainedChangePercent =
+      farmersLastYearNum > 0
+        ? Math.round(((farmersThisYearNum - farmersLastYearNum) / farmersLastYearNum) * 100)
+        : (farmersThisYearNum > 0 ? 100 : 0);
+
+    // Average ROI increase: average of roiIncreasePercent (only projects that have it)
+    const roiResult = await Project.findOne({
+      where: {
+        ...baseWhere,
+        roiIncreasePercent: { [Op.ne]: null },
+      },
+      attributes: [[sequelize.fn("AVG", sequelize.col("roiIncreasePercent")), "avgRoi"]],
+      raw: true,
+    });
+    const avgRoi = roiResult?.avgRoi != null ? Math.round(parseFloat(roiResult.avgRoi)) : null;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProjects,
+        totalProjectsChangePercent,
+        farmersTrained: farmersTrainedSum,
+        farmersTrainedChangePercent,
+        averageRoiIncreasePercent: avgRoi,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching project stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching project statistics",
+      error: error.message,
+    });
+  }
+};
+
 // Update project
 const updateProject = async (req, res) => {
   try {
@@ -354,10 +445,9 @@ const updateProject = async (req, res) => {
     const oldValues = project.toJSON();
     const oldImage = project.image;
 
-    // Handle image upload
-    if (req.files && req.files.project_image && req.files.project_image[0]) {
-      updates.image = convertToRelativePath(req.files.project_image[0].path);
-      
+    // Handle image upload (upload.single("project_image") puts file in req.file, not req.files)
+    if (req.file && req.file.path) {
+      updates.image = convertToRelativePath(req.file.path);
       // Delete old image if it exists
       if (oldImage) {
         const oldImagePath = path.join(__dirname, "..", "..", oldImage);
@@ -407,6 +497,19 @@ const updateProject = async (req, res) => {
 
     if (updates.priority !== undefined) {
       updates.priority = parseInt(updates.priority);
+    }
+
+    if (updates.farmersTrained !== undefined) {
+      updates.farmersTrained =
+        updates.farmersTrained === null || updates.farmersTrained === ""
+          ? null
+          : parseInt(updates.farmersTrained, 10);
+    }
+    if (updates.roiIncreasePercent !== undefined) {
+      updates.roiIncreasePercent =
+        updates.roiIncreasePercent === null || updates.roiIncreasePercent === ""
+          ? null
+          : parseFloat(updates.roiIncreasePercent);
     }
 
     // Validate and parse coordinates
@@ -674,6 +777,7 @@ module.exports = {
   getProjectById,
   getPublicProjects,
   getPublicProjectBySlug,
+  getPublicStats,
   updateProject,
   updateProjectStatus,
   updateProjectExecutionStatus,
