@@ -38,6 +38,7 @@ const completeProfile = async (req, res) => {
   try {
     const {
       role,
+      phone,
       country,
       region,
       district,
@@ -104,6 +105,7 @@ const completeProfile = async (req, res) => {
 
     await user.update({
       role,
+      ...(phone !== undefined && { phone: phone?.trim() || null }),
       profileCompleted: true,
       profileCompletedAt: now,
       status: "active",
