@@ -1,5 +1,6 @@
 const { MarketplaceUser, MarketplaceUserProfile } = require("../models");
 const { convertToRelativePath } = require("../utils/filePath");
+const bcrypt = require("bcryptjs");
 
 // Get current user + profile (protected)
 const getMe = async (req, res) => {
@@ -38,7 +39,11 @@ const completeProfile = async (req, res) => {
   try {
     const {
       role,
+      fullName,
+      email,
       phone,
+      currentPassword,
+      newPassword,
       country,
       region,
       district,
@@ -82,6 +87,47 @@ const completeProfile = async (req, res) => {
       });
     }
 
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is required to set a new password",
+        });
+      }
+      const match = await bcrypt.compare(currentPassword, user.password);
+      if (!match) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is incorrect",
+        });
+      }
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "New password must be at least 6 characters",
+        });
+      }
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    if (email !== undefined && email !== null && String(email).trim() !== "") {
+      const newEmail = String(email).trim().toLowerCase();
+      if (newEmail !== user.email) {
+        const existing = await MarketplaceUser.findOne({ where: { email: newEmail } });
+        if (existing && existing.id !== user.id) {
+          return res.status(400).json({
+            success: false,
+            message: "An account with this email already exists",
+          });
+        }
+        user.email = newEmail;
+      }
+    }
+
+    if (fullName !== undefined && fullName !== null && String(fullName).trim() !== "") {
+      user.fullName = String(fullName).trim();
+    }
+
     const now = new Date();
 
     const [profile] = await MarketplaceUserProfile.findOrCreate({
@@ -103,13 +149,17 @@ const completeProfile = async (req, res) => {
       roleSpecificData: roleSpecificData && typeof roleSpecificData === "object" ? roleSpecificData : null,
     });
 
-    await user.update({
+    const userUpdate = {
       role,
-      ...(phone !== undefined && { phone: phone?.trim() || null }),
       profileCompleted: true,
       profileCompletedAt: now,
       status: "active",
-    });
+      ...(phone !== undefined && { phone: phone?.trim() || null }),
+      ...(fullName !== undefined && fullName !== null && String(fullName).trim() !== "" && { fullName: String(fullName).trim() }),
+      ...(email !== undefined && email !== null && String(email).trim() !== "" && { email: String(email).trim().toLowerCase() }),
+    };
+    if (newPassword) userUpdate.password = user.password;
+    await user.update(userUpdate);
 
     const updatedUser = await MarketplaceUser.findByPk(user.id, {
       attributes: { exclude: ["password"] },
@@ -157,4 +207,60 @@ const uploadProfilePhoto = async (req, res) => {
   }
 };
 
-module.exports = { getMe, completeProfile, uploadProfilePhoto };
+// Get all marketplace users (admin only)
+const getAllMarketplaceUsers = async (req, res) => {
+  try {
+    const users = await MarketplaceUser.findAll({
+      attributes: { exclude: ["password"] },
+      include: [{ model: MarketplaceUserProfile, as: "profile", required: false }],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const data = users.map((u) => {
+      const json = u.toJSON();
+      json.profile = u.profile || null;
+      return json;
+    });
+
+    res.status(200).json({
+      success: true,
+      data,
+      total: data.length,
+    });
+  } catch (error) {
+    console.error("Marketplace getAllMarketplaceUsers error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch marketplace users",
+      error: error.message,
+    });
+  }
+};
+
+// Delete marketplace user (admin only). Profile is deleted via CASCADE.
+const deleteMarketplaceUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await MarketplaceUser.findByPk(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Marketplace user not found",
+      });
+    }
+    await user.destroy();
+    res.status(200).json({
+      success: true,
+      message: "Marketplace user deleted",
+    });
+  } catch (error) {
+    console.error("Marketplace deleteMarketplaceUser error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete marketplace user",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { getMe, completeProfile, uploadProfilePhoto, getAllMarketplaceUsers, deleteMarketplaceUser };
