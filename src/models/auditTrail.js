@@ -51,6 +51,11 @@ module.exports = (sequelize) => {
           "faq",
           "contact",
           "system",
+          "training_event",
+          "grant",
+          "partner",
+          "training_registration",
+          "grant_application",
           "other"
         ),
         allowNull: false,

@@ -48,6 +48,21 @@ const storage = multer.diskStorage({
       );
     } else if (file.fieldname === "profile_photo") {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "marketplace-profiles");
+    } else if (
+      file.fieldname === "training_event_image" ||
+      file.fieldname === "training_event_images"
+    ) {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "training-events");
+    } else if (
+      file.fieldname === "grant_image" ||
+      file.fieldname === "grant_images"
+    ) {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "grants");
+    } else if (
+      file.fieldname === "partner_logo" ||
+      file.fieldname === "partner_logos"
+    ) {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "partners");
     } else {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "misc");
     }
@@ -166,6 +181,15 @@ const uploadProjectImage = upload.single("project_image");
 // Middleware for marketplace user profile photo (public portal)
 const uploadMarketplaceProfilePhoto = upload.single("profile_photo");
 
+// Middleware for training event image
+const uploadTrainingEventImage = upload.single("training_event_image");
+
+// Middleware for grant image
+const uploadGrantImage = upload.single("grant_image");
+
+// Middleware for partner logo
+const uploadPartnerLogo = upload.single("partner_logo");
+
 // Error handling middleware for multer
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -255,7 +279,11 @@ module.exports = {
   uploadServiceImage,
   uploadProjectImage,
   uploadMarketplaceProfilePhoto,
+  uploadTrainingEventImage,
+  uploadGrantImage,
+  uploadPartnerLogo,
   handleUploadError,
   deleteFile,
   getFileType,
+  upload, // Export base upload object as well for flexibility
 };

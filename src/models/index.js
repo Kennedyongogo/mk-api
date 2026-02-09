@@ -24,6 +24,13 @@ const FormField = require("./formField")(sequelize);
 const FieldOption = require("./fieldOption")(sequelize);
 const FormSubmission = require("./formSubmission")(sequelize);
 
+// Training Opportunities Models
+const TrainingEvent = require("./trainingEvent")(sequelize);
+const Grant = require("./grant")(sequelize);
+const Partner = require("./partner")(sequelize);
+const TrainingRegistration = require("./trainingRegistration")(sequelize);
+const GrantApplication = require("./grantApplication")(sequelize);
+
 const models = {
   AdminUser,
   Document,
@@ -46,6 +53,12 @@ const models = {
   FormField,
   FieldOption,
   FormSubmission,
+  // Training Opportunities Models
+  TrainingEvent,
+  Grant,
+  Partner,
+  TrainingRegistration,
+  GrantApplication,
 };
 
 // Initialize models in correct order (parent tables first)
@@ -77,6 +90,13 @@ const initializeModels = async () => {
     await FormField.sync({ force: false, alter: false }); // Allow schema changes for conditional logic
     await FieldOption.sync({ force: false, alter: false });
     await FormSubmission.sync({ force: false, alter: false });
+
+    // Training Opportunities Models (parent tables first)
+    await TrainingEvent.sync({ force: false, alter: false });
+    await Grant.sync({ force: false, alter: false });
+    await Partner.sync({ force: false, alter: false });
+    await TrainingRegistration.sync({ force: false, alter: false });
+    await GrantApplication.sync({ force: false, alter: false });
 
     console.log("✅ All models synced successfully");
   } catch (error) {
@@ -301,6 +321,104 @@ const setupAssociations = () => {
     models.FormSubmission.belongsTo(models.AdminUser, {
       foreignKey: "reviewed_by",
       as: "reviewer",
+    });
+
+    // Training Opportunities Associations
+    // AdminUser → TrainingEvent, Grant, Partner (created_by/updated_by)
+    models.AdminUser.hasMany(models.TrainingEvent, {
+      foreignKey: "created_by",
+      as: "createdTrainingEvents",
+    });
+    models.TrainingEvent.belongsTo(models.AdminUser, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+
+    models.AdminUser.hasMany(models.TrainingEvent, {
+      foreignKey: "updated_by",
+      as: "updatedTrainingEvents",
+    });
+    models.TrainingEvent.belongsTo(models.AdminUser, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+
+    models.AdminUser.hasMany(models.Grant, {
+      foreignKey: "created_by",
+      as: "createdGrants",
+    });
+    models.Grant.belongsTo(models.AdminUser, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+
+    models.AdminUser.hasMany(models.Grant, {
+      foreignKey: "updated_by",
+      as: "updatedGrants",
+    });
+    models.Grant.belongsTo(models.AdminUser, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+
+    models.AdminUser.hasMany(models.Partner, {
+      foreignKey: "created_by",
+      as: "createdPartners",
+    });
+    models.Partner.belongsTo(models.AdminUser, {
+      foreignKey: "created_by",
+      as: "creator",
+    });
+
+    models.AdminUser.hasMany(models.Partner, {
+      foreignKey: "updated_by",
+      as: "updatedPartners",
+    });
+    models.Partner.belongsTo(models.AdminUser, {
+      foreignKey: "updated_by",
+      as: "updater",
+    });
+
+    // TrainingEvent → TrainingRegistration (1:Many)
+    models.TrainingEvent.hasMany(models.TrainingRegistration, {
+      foreignKey: "training_event_id",
+      as: "registrations",
+      onDelete: "CASCADE",
+    });
+    models.TrainingRegistration.belongsTo(models.TrainingEvent, {
+      foreignKey: "training_event_id",
+      as: "trainingEvent",
+    });
+
+    // Grant → GrantApplication (1:Many)
+    models.Grant.hasMany(models.GrantApplication, {
+      foreignKey: "grant_id",
+      as: "applications",
+      onDelete: "CASCADE",
+    });
+    models.GrantApplication.belongsTo(models.Grant, {
+      foreignKey: "grant_id",
+      as: "grant",
+    });
+
+    // MarketplaceUser → TrainingRegistration (1:Many)
+    models.MarketplaceUser.hasMany(models.TrainingRegistration, {
+      foreignKey: "user_id",
+      as: "trainingRegistrations",
+    });
+    models.TrainingRegistration.belongsTo(models.MarketplaceUser, {
+      foreignKey: "user_id",
+      as: "user",
+    });
+
+    // MarketplaceUser → GrantApplication (1:Many)
+    models.MarketplaceUser.hasMany(models.GrantApplication, {
+      foreignKey: "user_id",
+      as: "grantApplications",
+    });
+    models.GrantApplication.belongsTo(models.MarketplaceUser, {
+      foreignKey: "user_id",
+      as: "user",
     });
 
     console.log("✅ All associations set up successfully");

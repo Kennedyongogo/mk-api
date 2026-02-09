@@ -32,6 +32,11 @@ const consultationRoutes = require("./routes/consultationRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const marketplaceAuthRoutes = require("./routes/marketplaceAuthRoutes");
 const marketplaceProfileRoutes = require("./routes/marketplaceProfileRoutes");
+const trainingEventRoutes = require("./routes/trainingEventRoutes");
+const grantRoutes = require("./routes/grantRoutes");
+const partnerRoutes = require("./routes/partnerRoutes");
+const trainingRegistrationRoutes = require("./routes/trainingRegistrationRoutes");
+const grantApplicationRoutes = require("./routes/grantApplicationRoutes");
 
 const app = express();
 
@@ -50,6 +55,9 @@ const postsUploadPath = path.join(__dirname, "..", "uploads", "posts");
 const servicesUploadPath = path.join(__dirname, "..", "uploads", "services");
 const projectsUploadPath = path.join(__dirname, "..", "uploads", "projects");
 const marketplaceProfilesUploadPath = path.join(__dirname, "..", "uploads", "marketplace-profiles");
+const trainingEventsUploadPath = path.join(__dirname, "..", "uploads", "training-events");
+const grantsUploadPath = path.join(__dirname, "..", "uploads", "grants");
+const partnersUploadPath = path.join(__dirname, "..", "uploads", "partners");
 
 console.log("📁 Upload Paths:");
 console.log(
@@ -105,6 +113,9 @@ app.use("/uploads/posts", express.static(postsUploadPath));
 app.use("/uploads/services", express.static(servicesUploadPath));
 app.use("/uploads/projects", express.static(projectsUploadPath));
 app.use("/uploads/marketplace-profiles", express.static(marketplaceProfilesUploadPath));
+app.use("/uploads/training-events", express.static(trainingEventsUploadPath));
+app.use("/uploads/grants", express.static(grantsUploadPath));
+app.use("/uploads/partners", express.static(partnersUploadPath));
 
 // API routes
 console.log("🔗 Registering API routes...");
@@ -161,6 +172,21 @@ console.log("✅ /api/newsletter route registered");
 app.use("/api/marketplace/auth", marketplaceAuthRoutes);
 app.use("/api/marketplace", marketplaceProfileRoutes);
 console.log("✅ /api/marketplace (auth + profile) routes registered");
+
+app.use("/api/training-events", trainingEventRoutes);
+console.log("✅ /api/training-events route registered");
+
+app.use("/api/grants", grantRoutes);
+console.log("✅ /api/grants route registered");
+
+app.use("/api/partners", partnerRoutes);
+console.log("✅ /api/partners route registered");
+
+app.use("/api/training-registrations", trainingRegistrationRoutes);
+console.log("✅ /api/training-registrations route registered");
+
+app.use("/api/grant-applications", grantApplicationRoutes);
+console.log("✅ /api/grant-applications route registered");
 
 // Forgot password endpoint
 app.post("/api/auth/forgot", async (req, res) => {
@@ -280,6 +306,9 @@ const createUploadDirectories = () => {
     path.join(__dirname, "..", "uploads", "interest-gallery"),
     path.join(__dirname, "..", "uploads", "misc"),
     path.join(__dirname, "..", "uploads", "marketplace-profiles"),
+    path.join(__dirname, "..", "uploads", "training-events"),
+    path.join(__dirname, "..", "uploads", "grants"),
+    path.join(__dirname, "..", "uploads", "partners"),
   ];
 
   uploadDirs.forEach((dir) => {
