@@ -29,6 +29,16 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      latitude: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true,
+        comment: "Latitude coordinate for user location",
+      },
+      longitude: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: true,
+        comment: "Longitude coordinate for user location",
+      },
       preferredLanguage: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -71,12 +81,22 @@ module.exports = (sequelize) => {
         field: "role_specific_data",
         comment: "e.g. { whatTheyBuy: [], specialization: '', coverageArea: '' }",
       },
+      // Availability status (mainly for farmers)
+      availability: {
+        type: DataTypes.ENUM("available", "pre_order_only", "unavailable"),
+        allowNull: true,
+        comment: "Availability status for farmers (e.g., AVAILABLE, PRE-ORDER ONLY)",
+      },
     },
     {
       tableName: "marketplace_user_profiles",
       timestamps: true,
       underscored: true,
-      indexes: [{ fields: ["user_id"] }],
+      indexes: [
+        { fields: ["user_id"] },
+        { fields: ["latitude", "longitude"] },
+        { fields: ["availability"] },
+      ],
     }
   );
 

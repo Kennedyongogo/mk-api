@@ -47,6 +47,8 @@ const completeProfile = async (req, res) => {
       country,
       region,
       district,
+      latitude,
+      longitude,
       preferredLanguage,
       profilePhotoUrl,
       primaryActivity,
@@ -54,6 +56,7 @@ const completeProfile = async (req, res) => {
       scaleOfOperation,
       farmOrBusinessName,
       bio,
+      availability,
       roleSpecificData,
     } = req.body;
 
@@ -135,10 +138,28 @@ const completeProfile = async (req, res) => {
       defaults: { userId: user.id },
     });
 
+    // Parse latitude and longitude if provided
+    let latitudeValue = null;
+    let longitudeValue = null;
+    if (latitude !== undefined && latitude !== null && latitude !== "") {
+      const lat = parseFloat(latitude);
+      if (!isNaN(lat) && lat >= -90 && lat <= 90) {
+        latitudeValue = lat;
+      }
+    }
+    if (longitude !== undefined && longitude !== null && longitude !== "") {
+      const lng = parseFloat(longitude);
+      if (!isNaN(lng) && lng >= -180 && lng <= 180) {
+        longitudeValue = lng;
+      }
+    }
+
     await profile.update({
       country: country?.trim() || null,
       region: region?.trim() || null,
       district: district?.trim() || null,
+      latitude: latitudeValue,
+      longitude: longitudeValue,
       preferredLanguage: preferredLanguage?.trim() || null,
       profilePhotoUrl: profilePhotoUrl?.trim() || null,
       primaryActivity: primaryActivity || null,
@@ -146,6 +167,7 @@ const completeProfile = async (req, res) => {
       scaleOfOperation: scaleOfOperation || null,
       farmOrBusinessName: farmOrBusinessName?.trim() || null,
       bio: bio?.trim() || null,
+      availability: role === "farmer" && availability ? availability : null,
       roleSpecificData: roleSpecificData && typeof roleSpecificData === "object" ? roleSpecificData : null,
     });
 

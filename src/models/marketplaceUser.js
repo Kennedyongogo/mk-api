@@ -70,12 +70,24 @@ module.exports = (sequelize) => {
         allowNull: true,
         field: "last_login",
       },
+      isVerified: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: "is_verified",
+        comment: "Whether the user is MK-verified (for display in Farmers Hub and Veterinary Services)",
+      },
     },
     {
       tableName: "marketplace_users",
       timestamps: true,
       underscored: true,
-      indexes: [{ fields: ["email"] }, { fields: ["status"] }, { fields: ["role"] }],
+      indexes: [
+        { fields: ["email"] },
+        { fields: ["status"] },
+        { fields: ["role"] },
+        { fields: ["is_verified"] },
+      ],
     }
   );
 
