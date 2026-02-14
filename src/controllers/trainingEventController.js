@@ -421,7 +421,7 @@ const updateTrainingEvent = async (req, res) => {
   }
 };
 
-// Delete training event (soft delete)
+// Delete training event (hard delete – row removed from database)
 const deleteTrainingEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -436,8 +436,7 @@ const deleteTrainingEvent = async (req, res) => {
 
     const oldValues = trainingEvent.toJSON();
 
-    // Soft delete
-    await trainingEvent.update({ isDeleted: true });
+    await trainingEvent.destroy();
 
     if (req.user) {
       await logDelete(

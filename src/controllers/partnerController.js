@@ -9,9 +9,32 @@ const {
   logDelete,
 } = require("../utils/auditLogger");
 
+// Normalize partner body: admin form sends "website", API/model use "websiteUrl"; parse services JSON
+function normalizePartnerBody(body) {
+  const out = { ...body };
+  if (out.website !== undefined) {
+    out.websiteUrl = out.website;
+    delete out.website;
+  }
+  if (out.services !== undefined) {
+    if (typeof out.services === "string") {
+      try {
+        out.services = JSON.parse(out.services);
+      } catch {
+        out.services = null;
+      }
+    }
+  }
+  if (out.featured !== undefined) {
+    out.featured = out.featured === true || out.featured === "true";
+  }
+  return out;
+}
+
 // Create partner
 const createPartner = async (req, res) => {
   try {
+    const body = normalizePartnerBody(req.body);
     const {
       name,
       initial,
@@ -23,7 +46,11 @@ const createPartner = async (req, res) => {
       contactEmail,
       contactPhone,
       displayOrder,
-    } = req.body;
+      address,
+      sector,
+      services,
+      featured,
+    } = body;
 
     // Validate required fields
     if (!name) {
@@ -52,6 +79,10 @@ const createPartner = async (req, res) => {
       contactEmail,
       contactPhone,
       displayOrder: displayOrder ? parseInt(displayOrder) : 0,
+      address: address || null,
+      sector: sector || null,
+      services: Array.isArray(services) ? services : null,
+      featured: featured === true || featured === "true",
       isActive: true,
       created_by: req.user?.id || null,
       updated_by: req.user?.id || null,
@@ -204,7 +235,7 @@ const getPublicPartners = async (req, res) => {
 const updatePartner = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const updates = normalizePartnerBody(req.body);
 
     const partner = await Partner.findByPk(id);
 
@@ -284,7 +315,7 @@ const updatePartner = async (req, res) => {
   }
 };
 
-// Delete partner (soft delete)
+// Delete partner (hard delete – row removed from database)
 const deletePartner = async (req, res) => {
   try {
     const { id } = req.params;
@@ -299,8 +330,7 @@ const deletePartner = async (req, res) => {
 
     const oldValues = partner.toJSON();
 
-    // Soft delete
-    await partner.update({ isDeleted: true });
+    await partner.destroy();
 
     if (req.user) {
       await logDelete(

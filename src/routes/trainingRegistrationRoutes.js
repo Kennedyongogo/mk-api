@@ -4,6 +4,7 @@ const {
   registerForTraining,
   getUserRegistrations,
   cancelRegistration,
+  getAllRegistrations,
   getTrainingEventRegistrations,
   updateRegistrationStatus,
 } = require("../controllers/trainingRegistrationController");
@@ -39,6 +40,13 @@ router.put("/:id/cancel", authenticateMarketplace, cancelRegistration);
 // Admin routes
 router.use(authenticateAdmin);
 router.use(requireAdminOrHigher);
+
+/**
+ * @route   GET /api/training-registrations
+ * @desc    Get all registrations (paginated, optional status filter)
+ * @access  Admin
+ */
+router.get("/", getAllRegistrations);
 
 /**
  * @route   GET /api/training-registrations/training-event/:trainingEventId

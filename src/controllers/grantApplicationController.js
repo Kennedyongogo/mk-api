@@ -259,6 +259,57 @@ const withdrawApplication = async (req, res) => {
   }
 };
 
+// Get all applications across all grants (admin)
+const getAllGrantApplications = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query;
+    const where = {};
+
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const { count, rows } = await GrantApplication.findAndCountAll({
+      where,
+      include: [
+        {
+          model: MarketplaceUser,
+          as: "user",
+          attributes: ["id", "fullName", "email", "phone"],
+        },
+        {
+          model: Grant,
+          as: "grant",
+          attributes: ["id", "title", "deadline", "amount"],
+        },
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [["applicationDate", "DESC"]],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(count / parseInt(limit)),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching all grant applications:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching applications",
+      error: error.message,
+    });
+  }
+};
+
 // Get all applications for a grant (admin)
 const getGrantApplications = async (req, res) => {
   try {
@@ -371,6 +422,7 @@ module.exports = {
   saveDraftApplication,
   getUserApplications,
   withdrawApplication,
+  getAllGrantApplications,
   getGrantApplications,
   updateApplicationStatus,
 };

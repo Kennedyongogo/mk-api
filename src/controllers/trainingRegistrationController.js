@@ -176,6 +176,57 @@ const cancelRegistration = async (req, res) => {
   }
 };
 
+// Get all registrations across all events (admin)
+const getAllRegistrations = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query;
+    const where = {};
+
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const { count, rows } = await TrainingRegistration.findAndCountAll({
+      where,
+      include: [
+        {
+          model: MarketplaceUser,
+          as: "user",
+          attributes: ["id", "fullName", "email", "phone"],
+        },
+        {
+          model: TrainingEvent,
+          as: "trainingEvent",
+          attributes: ["id", "title", "date", "location"],
+        },
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [["registrationDate", "DESC"]],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(count / parseInt(limit)),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching all registrations:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching registrations",
+      error: error.message,
+    });
+  }
+};
+
 // Get all registrations for a training event (admin)
 const getTrainingEventRegistrations = async (req, res) => {
   try {
@@ -287,6 +338,7 @@ module.exports = {
   registerForTraining,
   getUserRegistrations,
   cancelRegistration,
+  getAllRegistrations,
   getTrainingEventRegistrations,
   updateRegistrationStatus,
 };

@@ -381,7 +381,7 @@ const updateGrant = async (req, res) => {
   }
 };
 
-// Delete grant (soft delete)
+// Delete grant (hard delete – row removed from database)
 const deleteGrant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -396,8 +396,7 @@ const deleteGrant = async (req, res) => {
 
     const oldValues = grant.toJSON();
 
-    // Soft delete
-    await grant.update({ isDeleted: true });
+    await grant.destroy();
 
     if (req.user) {
       await logDelete(

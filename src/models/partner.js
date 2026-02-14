@@ -64,6 +64,39 @@ module.exports = (sequelize) => {
         allowNull: true,
         field: "contact_phone",
       },
+      address: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+        comment: "Partner organization address",
+      },
+      sector: {
+        type: DataTypes.STRING(200),
+        allowNull: true,
+        comment: "e.g. Agriculture, Technology, Finance",
+      },
+      services: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: "JSON array of service strings",
+        get() {
+          const raw = this.getDataValue("services");
+          if (!raw) return null;
+          try {
+            return typeof raw === "string" ? JSON.parse(raw) : raw;
+          } catch {
+            return null;
+          }
+        },
+        set(val) {
+          this.setDataValue("services", Array.isArray(val) ? JSON.stringify(val) : val == null ? null : String(val));
+        },
+      },
+      featured: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        comment: "Whether the partner is featured",
+      },
       displayOrder: {
         type: DataTypes.INTEGER,
         allowNull: false,

@@ -5,6 +5,7 @@ const {
   saveDraftApplication,
   getUserApplications,
   withdrawApplication,
+  getAllGrantApplications,
   getGrantApplications,
   updateApplicationStatus,
 } = require("../controllers/grantApplicationController");
@@ -47,6 +48,13 @@ router.put("/:id/withdraw", authenticateMarketplace, withdrawApplication);
 // Admin routes
 router.use(authenticateAdmin);
 router.use(requireAdminOrHigher);
+
+/**
+ * @route   GET /api/grant-applications
+ * @desc    Get all grant applications (paginated, optional status filter)
+ * @access  Admin
+ */
+router.get("/", getAllGrantApplications);
 
 /**
  * @route   GET /api/grant-applications/grant/:grantId
