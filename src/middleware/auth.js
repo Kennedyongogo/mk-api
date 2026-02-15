@@ -134,6 +134,31 @@ exports.optionalAuth = async (req, res, next) => {
   }
 };
 
+// Optional marketplace auth: set req.userId when valid marketplace token present (no 401 if missing)
+exports.optionalAuthenticateMarketplace = async (req, res, next) => {
+  const authHeader = req.header("Authorization");
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    if (decoded.type !== "marketplace") return next();
+
+    const user = await MarketplaceUser.findByPk(decoded.id, { attributes: ["id"] });
+    if (user) {
+      req.userId = user.id;
+      req.user = user;
+      req.userType = "marketplace";
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+};
+
 // Check if admin has super-admin role
 exports.requireSuperAdmin = (req, res, next) => {
   if (req.userType !== "admin" || req.adminRole !== "super-admin") {

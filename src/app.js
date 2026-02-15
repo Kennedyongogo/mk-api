@@ -32,6 +32,7 @@ const consultationRoutes = require("./routes/consultationRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const marketplaceAuthRoutes = require("./routes/marketplaceAuthRoutes");
 const marketplaceProfileRoutes = require("./routes/marketplaceProfileRoutes");
+const marketplaceListingRoutes = require("./routes/marketplaceListingRoutes");
 const trainingEventRoutes = require("./routes/trainingEventRoutes");
 const grantRoutes = require("./routes/grantRoutes");
 const partnerRoutes = require("./routes/partnerRoutes");
@@ -171,7 +172,8 @@ console.log("✅ /api/newsletter route registered");
 
 app.use("/api/marketplace/auth", marketplaceAuthRoutes);
 app.use("/api/marketplace", marketplaceProfileRoutes);
-console.log("✅ /api/marketplace (auth + profile) routes registered");
+app.use("/api/marketplace", marketplaceListingRoutes);
+console.log("✅ /api/marketplace (auth + profile + listings) routes registered");
 
 app.use("/api/training-events", trainingEventRoutes);
 console.log("✅ /api/training-events route registered");

@@ -30,6 +30,8 @@ const Grant = require("./grant")(sequelize);
 const Partner = require("./partner")(sequelize);
 const TrainingRegistration = require("./trainingRegistration")(sequelize);
 const GrantApplication = require("./grantApplication")(sequelize);
+const FeedFormulationRequest = require("./feedFormulationRequest")(sequelize);
+const MarketplaceListing = require("./marketplaceListing")(sequelize);
 
 const models = {
   AdminUser,
@@ -59,6 +61,8 @@ const models = {
   Partner,
   TrainingRegistration,
   GrantApplication,
+  FeedFormulationRequest,
+  MarketplaceListing,
 };
 
 // Initialize models in correct order (parent tables first)
@@ -97,6 +101,8 @@ const initializeModels = async () => {
     await Partner.sync({ force: false, alter: false });
     await TrainingRegistration.sync({ force: false, alter: false });
     await GrantApplication.sync({ force: false, alter: false });
+    await FeedFormulationRequest.sync({ force: false, alter: false });
+    await MarketplaceListing.sync({ force: false, alter: false });
 
     console.log("✅ All models synced successfully");
   } catch (error) {
@@ -419,6 +425,36 @@ const setupAssociations = () => {
     models.GrantApplication.belongsTo(models.MarketplaceUser, {
       foreignKey: "user_id",
       as: "user",
+    });
+
+    // MarketplaceUser → FeedFormulationRequest (1:Many, optional)
+    models.MarketplaceUser.hasMany(models.FeedFormulationRequest, {
+      foreignKey: "marketplace_user_id",
+      as: "feedFormulationRequests",
+    });
+    models.FeedFormulationRequest.belongsTo(models.MarketplaceUser, {
+      foreignKey: "marketplace_user_id",
+      as: "user",
+    });
+
+    // MarketplaceUser → MarketplaceListing (1:Many)
+    models.MarketplaceUser.hasMany(models.MarketplaceListing, {
+      foreignKey: "user_id",
+      as: "listings",
+    });
+    models.MarketplaceListing.belongsTo(models.MarketplaceUser, {
+      foreignKey: "user_id",
+      as: "user",
+    });
+
+    // MarketplaceListing → AdminUser (approved_by, optional)
+    models.MarketplaceListing.belongsTo(models.AdminUser, {
+      foreignKey: "approved_by",
+      as: "approver",
+    });
+    models.AdminUser.hasMany(models.MarketplaceListing, {
+      foreignKey: "approved_by",
+      as: "approvedListings",
     });
 
     console.log("✅ All associations set up successfully");
