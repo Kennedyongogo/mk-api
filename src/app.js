@@ -38,6 +38,7 @@ const grantRoutes = require("./routes/grantRoutes");
 const partnerRoutes = require("./routes/partnerRoutes");
 const trainingRegistrationRoutes = require("./routes/trainingRegistrationRoutes");
 const grantApplicationRoutes = require("./routes/grantApplicationRoutes");
+const mapRoutes = require("./routes/mapRoutes");
 
 const app = express();
 
@@ -59,6 +60,7 @@ const marketplaceProfilesUploadPath = path.join(__dirname, "..", "uploads", "mar
 const trainingEventsUploadPath = path.join(__dirname, "..", "uploads", "training-events");
 const grantsUploadPath = path.join(__dirname, "..", "uploads", "grants");
 const partnersUploadPath = path.join(__dirname, "..", "uploads", "partners");
+const marketplaceListingsUploadPath = path.join(__dirname, "..", "uploads", "marketplace-listings");
 
 console.log("📁 Upload Paths:");
 console.log(
@@ -117,6 +119,7 @@ app.use("/uploads/marketplace-profiles", express.static(marketplaceProfilesUploa
 app.use("/uploads/training-events", express.static(trainingEventsUploadPath));
 app.use("/uploads/grants", express.static(grantsUploadPath));
 app.use("/uploads/partners", express.static(partnersUploadPath));
+app.use("/uploads/marketplace-listings", express.static(marketplaceListingsUploadPath));
 
 // API routes
 console.log("🔗 Registering API routes...");
@@ -189,6 +192,9 @@ console.log("✅ /api/training-registrations route registered");
 
 app.use("/api/grant-applications", grantApplicationRoutes);
 console.log("✅ /api/grant-applications route registered");
+
+app.use("/api/map", mapRoutes);
+console.log("✅ /api/map route registered");
 
 // Forgot password endpoint
 app.post("/api/auth/forgot", async (req, res) => {
@@ -311,6 +317,7 @@ const createUploadDirectories = () => {
     path.join(__dirname, "..", "uploads", "training-events"),
     path.join(__dirname, "..", "uploads", "grants"),
     path.join(__dirname, "..", "uploads", "partners"),
+    path.join(__dirname, "..", "uploads", "marketplace-listings"),
   ];
 
   uploadDirs.forEach((dir) => {

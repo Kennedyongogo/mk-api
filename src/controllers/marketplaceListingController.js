@@ -3,9 +3,18 @@ const {
   MarketplaceUser,
   MarketplaceUserProfile,
   AdminUser,
+  TrainingEvent,
+  Grant,
+  Partner,
+  TrainingRegistration,
+  GrantApplication,
+  FeedFormulationRequest,
 } = require("../models");
+const { convertToRelativePath } = require("../utils/filePath");
+const path = require("path");
+const { deleteFile } = require("../middleware/upload");
 
-// Create listing (marketplace user, authenticated)
+// Create listing (marketplace user, authenticated). Image: file upload (listing_image) → stored as relative path like project.
 const createListing = async (req, res) => {
   try {
     const {
@@ -17,7 +26,6 @@ const createListing = async (req, res) => {
       quantity,
       quantityUnit,
       location,
-      imageUrl,
     } = req.body;
 
     if (!title || typeof title !== "string" || !title.trim()) {
@@ -25,6 +33,11 @@ const createListing = async (req, res) => {
         success: false,
         message: "Title is required",
       });
+    }
+
+    let imagePath = null;
+    if (req.file && req.file.path) {
+      imagePath = convertToRelativePath(req.file.path);
     }
 
     const listing = await MarketplaceListing.create({
@@ -58,10 +71,7 @@ const createListing = async (req, res) => {
         location != null && String(location).trim() !== ""
           ? String(location).trim().slice(0, 255)
           : null,
-      imageUrl:
-        imageUrl != null && String(imageUrl).trim() !== ""
-          ? String(imageUrl).trim().slice(0, 512)
-          : null,
+      imageUrl: imagePath != null ? imagePath.slice(0, 512) : null,
       status: "pending_approval",
     });
 
@@ -241,7 +251,7 @@ const updateListing = async (req, res) => {
       quantity,
       quantityUnit,
       location,
-      imageUrl,
+      delete_image,
     } = req.body;
 
     const updates = {};
@@ -278,11 +288,21 @@ const updateListing = async (req, res) => {
         location != null && String(location).trim() !== ""
           ? String(location).trim().slice(0, 255)
           : null;
-    if (imageUrl !== undefined)
-      updates.imageUrl =
-        imageUrl != null && String(imageUrl).trim() !== ""
-          ? String(imageUrl).trim().slice(0, 512)
-          : null;
+
+    const oldImage = listing.imageUrl;
+    if (req.file && req.file.path) {
+      updates.imageUrl = convertToRelativePath(req.file.path).slice(0, 512);
+      if (oldImage && oldImage.startsWith("uploads/")) {
+        const oldPath = path.join(__dirname, "..", "..", oldImage);
+        await deleteFile(oldPath);
+      }
+    } else if (delete_image === "true" || delete_image === true) {
+      if (oldImage && oldImage.startsWith("uploads/")) {
+        const oldPath = path.join(__dirname, "..", "..", oldImage);
+        await deleteFile(oldPath);
+      }
+      updates.imageUrl = null;
+    }
 
     if (listing.status === "rejected") {
       updates.status = "pending_approval";
@@ -328,6 +348,11 @@ const deleteListing = async (req, res) => {
         success: false,
         message: "You can only delete your own listings",
       });
+    }
+
+    if (listing.imageUrl && listing.imageUrl.startsWith("uploads/")) {
+      const imagePath = path.join(__dirname, "..", "..", listing.imageUrl);
+      await deleteFile(imagePath);
     }
 
     await listing.destroy();
@@ -495,6 +520,143 @@ const rejectListing = async (req, res) => {
   }
 };
 
+// Admin: get marketplace statistics for dashboard (users by role, listings, feed requests, training, grants, partners, applications)
+const getMarketplaceStats = async (req, res) => {
+  try {
+    const [
+      totalListings,
+      listingsPending,
+      listingsApproved,
+      listingsRejected,
+      totalMarketplaceUsers,
+      usersFarmer,
+      usersBuyer,
+      usersInputSupplier,
+      usersVeterinarian,
+      usersConsultant,
+      usersVerified,
+      totalFeedFormulationRequests,
+      feedRequestsNew,
+      feedRequestsInReview,
+      feedRequestsResponded,
+      feedRequestsClosed,
+      totalTrainingEvents,
+      totalGrants,
+      totalPartners,
+      totalTrainingRegistrations,
+      regsPending,
+      regsConfirmed,
+      regsCancelled,
+      regsAttended,
+      totalGrantApplications,
+      appsDraft,
+      appsSubmitted,
+      appsUnderReview,
+      appsApproved,
+      appsRejected,
+      appsWithdrawn,
+    ] = await Promise.all([
+      MarketplaceListing.count(),
+      MarketplaceListing.count({ where: { status: "pending_approval" } }),
+      MarketplaceListing.count({ where: { status: "approved" } }),
+      MarketplaceListing.count({ where: { status: "rejected" } }),
+      MarketplaceUser.count(),
+      MarketplaceUser.count({ where: { role: "farmer" } }),
+      MarketplaceUser.count({ where: { role: "buyer" } }),
+      MarketplaceUser.count({ where: { role: "input_supplier" } }),
+      MarketplaceUser.count({ where: { role: "veterinarian" } }),
+      MarketplaceUser.count({ where: { role: "consultant" } }),
+      MarketplaceUser.count({ where: { isVerified: true } }),
+      FeedFormulationRequest.count(),
+      FeedFormulationRequest.count({ where: { status: "new" } }),
+      FeedFormulationRequest.count({ where: { status: "in_review" } }),
+      FeedFormulationRequest.count({ where: { status: "responded" } }),
+      FeedFormulationRequest.count({ where: { status: "closed" } }),
+      TrainingEvent.count(),
+      Grant.count(),
+      Partner.count(),
+      TrainingRegistration.count(),
+      TrainingRegistration.count({ where: { status: "pending" } }),
+      TrainingRegistration.count({ where: { status: "confirmed" } }),
+      TrainingRegistration.count({ where: { status: "cancelled" } }),
+      TrainingRegistration.count({ where: { status: "attended" } }),
+      GrantApplication.count(),
+      GrantApplication.count({ where: { status: "draft" } }),
+      GrantApplication.count({ where: { status: "submitted" } }),
+      GrantApplication.count({ where: { status: "under_review" } }),
+      GrantApplication.count({ where: { status: "approved" } }),
+      GrantApplication.count({ where: { status: "rejected" } }),
+      GrantApplication.count({ where: { status: "withdrawn" } }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users: {
+          total: totalMarketplaceUsers,
+          byRole: {
+            farmer: usersFarmer,
+            buyer: usersBuyer,
+            input_supplier: usersInputSupplier,
+            veterinarian: usersVeterinarian,
+            consultant: usersConsultant,
+          },
+          verified: usersVerified,
+        },
+        listings: {
+          total: totalListings,
+          byStatus: {
+            pending_approval: listingsPending,
+            approved: listingsApproved,
+            rejected: listingsRejected,
+          },
+        },
+        feedFormulationRequests: {
+          total: totalFeedFormulationRequests,
+          byStatus: {
+            new: feedRequestsNew,
+            in_review: feedRequestsInReview,
+            responded: feedRequestsResponded,
+            closed: feedRequestsClosed,
+          },
+        },
+        trainingOpportunities: {
+          trainingEvents: totalTrainingEvents,
+          grants: totalGrants,
+          partners: totalPartners,
+          trainingRegistrations: {
+            total: totalTrainingRegistrations,
+            byStatus: {
+              pending: regsPending,
+              confirmed: regsConfirmed,
+              cancelled: regsCancelled,
+              attended: regsAttended,
+            },
+          },
+          grantApplications: {
+            total: totalGrantApplications,
+            byStatus: {
+              draft: appsDraft,
+              submitted: appsSubmitted,
+              under_review: appsUnderReview,
+              approved: appsApproved,
+              rejected: appsRejected,
+              withdrawn: appsWithdrawn,
+            },
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Marketplace getMarketplaceStats error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch marketplace statistics",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createListing,
   getMyListings,
@@ -505,4 +667,5 @@ module.exports = {
   getListingsForAdmin,
   approveListing,
   rejectListing,
+  getMarketplaceStats,
 };

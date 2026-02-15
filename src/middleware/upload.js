@@ -63,6 +63,11 @@ const storage = multer.diskStorage({
       file.fieldname === "partner_logos"
     ) {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "partners");
+    } else if (
+      file.fieldname === "listing_image" ||
+      file.fieldname === "listing_images"
+    ) {
+      uploadPath = path.join(__dirname, "..", "..", "uploads", "marketplace-listings");
     } else {
       uploadPath = path.join(__dirname, "..", "..", "uploads", "misc");
     }
@@ -190,6 +195,9 @@ const uploadGrantImage = upload.single("grant_image");
 // Middleware for partner logo
 const uploadPartnerLogo = upload.single("partner_logo");
 
+// Middleware for marketplace listing image
+const uploadListingImage = upload.single("listing_image");
+
 // Error handling middleware for multer
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -282,6 +290,7 @@ module.exports = {
   uploadTrainingEventImage,
   uploadGrantImage,
   uploadPartnerLogo,
+  uploadListingImage,
   handleUploadError,
   deleteFile,
   getFileType,

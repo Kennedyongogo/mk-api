@@ -1,4 +1,21 @@
-const { AdminUser, Document } = require("../models");
+const {
+  AdminUser,
+  Document,
+  AuditTrail,
+  Review,
+  Blog,
+  Member,
+  Service,
+  Project,
+  FAQ,
+  Contact,
+  QuoteRequest,
+  Consultation,
+  NewsletterSubscriber,
+  InterestGallery,
+  Form,
+  FormSubmission,
+} = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
@@ -627,13 +644,46 @@ const getPublicAdminById = async (req, res) => {
   }
 };
 
-// Get platform dashboard stats
+// Get platform dashboard stats (excludes marketplace stats: users, listings, feed requests, training events, grants, partners, registrations, grant applications)
 const getDashboardStats = async (req, res) => {
   try {
-    // Get counts
-    const totalAdmins = await AdminUser.count();
-    const activeAdmins = await AdminUser.count({ where: { isActive: true } });
-    const totalDocuments = await Document.count();
+    const [
+      totalAdmins,
+      activeAdmins,
+      totalDocuments,
+      totalAuditLogs,
+      totalReviews,
+      totalBlogs,
+      totalMembers,
+      totalServices,
+      totalProjects,
+      totalFaqs,
+      totalContacts,
+      totalQuoteRequests,
+      totalConsultations,
+      totalNewsletterSubscribers,
+      totalInterestGallery,
+      totalForms,
+      totalFormSubmissions,
+    ] = await Promise.all([
+      AdminUser.count(),
+      AdminUser.count({ where: { isActive: true } }),
+      Document.count(),
+      AuditTrail.count(),
+      Review.count(),
+      Blog.count(),
+      Member.count(),
+      Service.count(),
+      Project.count(),
+      FAQ.count(),
+      Contact.count(),
+      QuoteRequest.count(),
+      Consultation.count(),
+      NewsletterSubscriber.count(),
+      InterestGallery.count(),
+      Form.count(),
+      FormSubmission.count(),
+    ]);
 
     res.status(200).json({
       success: true,
@@ -642,6 +692,20 @@ const getDashboardStats = async (req, res) => {
           totalAdmins,
           activeAdmins,
           totalDocuments,
+          totalAuditLogs,
+          totalReviews,
+          totalBlogs,
+          totalMembers,
+          totalServices,
+          totalProjects,
+          totalFaqs,
+          totalContacts,
+          totalQuoteRequests,
+          totalConsultations,
+          totalNewsletterSubscribers,
+          totalInterestGallery,
+          totalForms,
+          totalFormSubmissions,
         },
       },
     });

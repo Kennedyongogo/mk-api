@@ -57,6 +57,7 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING(512),
         allowNull: true,
         field: "image_url",
+        comment: "Relative path (uploads/marketplace-listings/...) from file upload, or legacy URL",
       },
       status: {
         type: DataTypes.ENUM("pending_approval", "approved", "rejected"),
