@@ -126,7 +126,7 @@ const getPublicListings = async (req, res) => {
         {
           model: MarketplaceUser,
           as: "user",
-          attributes: ["id", "fullName", "isVerified"],
+          attributes: ["id", "fullName", "phone", "isVerified"],
           include: [
             {
               model: MarketplaceUserProfile,
@@ -350,6 +350,13 @@ const deleteListing = async (req, res) => {
       });
     }
 
+    if (listing.status === "approved") {
+      return res.status(403).json({
+        success: false,
+        message: "Approved listings can only be deleted by an administrator. Contact support.",
+      });
+    }
+
     if (listing.imageUrl && listing.imageUrl.startsWith("uploads/")) {
       const imagePath = path.join(__dirname, "..", "..", listing.imageUrl);
       await deleteFile(imagePath);
@@ -362,6 +369,39 @@ const deleteListing = async (req, res) => {
     });
   } catch (error) {
     console.error("Marketplace deleteListing error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete listing",
+      error: error.message,
+    });
+  }
+};
+
+// Admin: delete any listing (including approved)
+const deleteListingAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const listing = await MarketplaceListing.findByPk(id);
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    if (listing.imageUrl && listing.imageUrl.startsWith("uploads/")) {
+      const imagePath = path.join(__dirname, "..", "..", listing.imageUrl);
+      await deleteFile(imagePath);
+    }
+
+    await listing.destroy();
+    res.status(200).json({
+      success: true,
+      message: "Listing deleted",
+    });
+  } catch (error) {
+    console.error("Marketplace deleteListingAdmin error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete listing",
@@ -664,6 +704,7 @@ module.exports = {
   getListingById,
   updateListing,
   deleteListing,
+  deleteListingAdmin,
   getListingsForAdmin,
   approveListing,
   rejectListing,

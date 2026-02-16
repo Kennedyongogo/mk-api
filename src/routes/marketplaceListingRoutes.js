@@ -7,6 +7,7 @@ const {
   getListingById,
   updateListing,
   deleteListing,
+  deleteListingAdmin,
   getListingsForAdmin,
   approveListing,
   rejectListing,
@@ -28,5 +29,6 @@ router.get("/admin/stats", authenticateAdmin, getMarketplaceStats);
 router.get("/admin/listings", authenticateAdmin, getListingsForAdmin);
 router.patch("/admin/listings/:id/approve", authenticateAdmin, approveListing);
 router.patch("/admin/listings/:id/reject", authenticateAdmin, rejectListing);
+router.delete("/admin/listings/:id", authenticateAdmin, deleteListingAdmin);
 
 module.exports = router;
