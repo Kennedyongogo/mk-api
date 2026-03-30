@@ -1,13 +1,17 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const TrainingEvent = sequelize.define(
-    "TrainingEvent",
+  const JobOpportunity = sequelize.define(
+    "JobOpportunity",
     {
       id: {
         type: DataTypes.UUID,
         primaryKey: true,
         defaultValue: DataTypes.UUIDV4,
+      },
+      type: {
+        type: DataTypes.ENUM("Job", "Internship", "Attachment"),
+        allowNull: false,
       },
       title: {
         type: DataTypes.STRING,
@@ -19,54 +23,22 @@ module.exports = (sequelize) => {
       },
       description: {
         type: DataTypes.TEXT,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
-      },
-      date: {
-        type: DataTypes.DATE,
         allowNull: true,
-        comment: "Event date",
       },
-      startTime: {
-        type: DataTypes.TIME,
-        allowNull: true,
-        field: "start_time",
-        comment: "Event start time",
-      },
-      endTime: {
-        type: DataTypes.TIME,
-        allowNull: true,
-        field: "end_time",
-        comment: "Event end time",
-      },
-      endDate: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        field: "end_date",
-        comment: "Event end date (for multi-day events)",
-      },
+      // Keep location consistent with existing event/project patterns.
+      // Later you can replace this with structured county/subcounty/ward fields.
       location: {
         type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
+        allowNull: true,
+        comment: "Human-readable location text (e.g., Kiambu County)",
       },
       latitude: {
         type: DataTypes.DECIMAL(10, 8),
         allowNull: true,
-        comment: "Latitude coordinate for event location",
       },
       longitude: {
         type: DataTypes.DECIMAL(11, 8),
         allowNull: true,
-        comment: "Longitude coordinate for event location",
-      },
-      type: {
-        type: DataTypes.ENUM("Workshop", "Training", "Field day", "Seminar"),
-        allowNull: false,
       },
       image: {
         type: DataTypes.STRING(500),
@@ -77,42 +49,26 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING(200),
         allowNull: true,
         field: "image_alt_text",
-        comment: "Alt text for the event image for accessibility",
       },
-      registrationUrl: {
+      // Optional external application URL (for Job/Internship)
+      applyUrl: {
         type: DataTypes.STRING(500),
         allowNull: true,
-        field: "registration_url",
-        comment: "URL for registration (if external)",
+        field: "apply_url",
       },
-      capacity: {
-        type: DataTypes.INTEGER,
+      // Optional attachment URL (for Attachment type)
+      attachmentUrl: {
+        type: DataTypes.STRING(500),
         allowNull: true,
-        comment: "Maximum number of participants",
-      },
-      price: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-        comment: "Event price (if paid)",
-      },
-      currency: {
-        type: DataTypes.STRING(3),
-        allowNull: true,
-        defaultValue: "USD",
-        comment: "Currency code",
-      },
-      organizer: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        comment: "Organizing entity",
+        field: "attachment_url",
       },
       contactEmail: {
         type: DataTypes.STRING,
         allowNull: true,
-        field: "contact_email",
         validate: {
           isEmail: true,
         },
+        field: "contact_email",
       },
       contactPhone: {
         type: DataTypes.STRING(50),
@@ -123,20 +79,23 @@ module.exports = (sequelize) => {
         type: DataTypes.JSON,
         allowNull: true,
         defaultValue: [],
-        comment: "Array of tags for filtering",
       },
       featured: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-        comment: "Whether to feature on homepage",
       },
       isActive: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true,
         field: "is_active",
-        comment: "Whether the event is currently active/visible",
+      },
+      isDeleted: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: "is_deleted",
       },
       created_by: {
         type: DataTypes.UUID,
@@ -154,18 +113,11 @@ module.exports = (sequelize) => {
           key: "id",
         },
       },
-      isDeleted: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-        field: "is_deleted",
-      },
     },
     {
-      tableName: "training_events",
+      tableName: "job_opportunities",
       timestamps: true,
       indexes: [
-        { fields: ["date"] },
         { fields: ["type"] },
         { fields: ["location"] },
         { fields: ["featured"] },
@@ -176,5 +128,6 @@ module.exports = (sequelize) => {
     }
   );
 
-  return TrainingEvent;
+  return JobOpportunity;
 };
+

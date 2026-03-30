@@ -1,4 +1,4 @@
-const { sequelize } = require("../config/database");
+const { sequelize, directSequelize } = require("../config/database");
 
 // Import all models
 const AdminUser = require("./adminUser")(sequelize);
@@ -13,6 +13,8 @@ const FAQ = require("./faq")(sequelize);
 const Contact = require("./contact")(sequelize);
 const QuoteRequest = require("./quoteRequest")(sequelize);
 const Consultation = require("./consultation")(sequelize);
+const ServiceRequest = require("./serviceRequest")(sequelize);
+const JobOpportunity = require("./jobOpportunity")(sequelize);
 const NewsletterSubscriber = require("./newsletterSubscriber")(sequelize);
 const InterestGallery = require("./interestGallery")(sequelize);
 const MarketplaceUser = require("./marketplaceUser")(sequelize);
@@ -46,6 +48,8 @@ const models = {
   Contact,
   QuoteRequest,
   Consultation,
+  ServiceRequest,
+  JobOpportunity,
   NewsletterSubscriber,
   InterestGallery,
   MarketplaceUser,
@@ -72,6 +76,7 @@ const initializeModels = async () => {
 
     // Use alter: false to prevent schema conflicts in production
     console.log("📋 Syncing tables...");
+
     await AdminUser.sync({ force: false, alter: false });
     await Document.sync({ force: false, alter: false });
     await AuditTrail.sync({ force: false, alter: false }); // Allow schema changes for enum updates
@@ -84,6 +89,8 @@ const initializeModels = async () => {
     await Contact.sync({ force: false, alter: false });
     await QuoteRequest.sync({ force: false, alter: false });
     await Consultation.sync({ force: false, alter: false });
+    await ServiceRequest.sync({ force: false, alter: false });
+    await JobOpportunity.sync({ force: false, alter: false });
     await NewsletterSubscriber.sync({ force: false, alter: false });
     await InterestGallery.sync({ force: false, alter: false });
     await MarketplaceUser.sync({ force: false, alter: false });
@@ -235,6 +242,16 @@ const setupAssociations = () => {
     models.Consultation.belongsTo(models.AdminUser, {
       foreignKey: "reviewedBy",
       as: "reviewer",
+    });
+
+    // Service → ServiceRequest (1:Many)
+    models.Service.hasMany(models.ServiceRequest, {
+      foreignKey: "serviceId",
+      as: "serviceRequests",
+    });
+    models.ServiceRequest.belongsTo(models.Service, {
+      foreignKey: "serviceId",
+      as: "service",
     });
 
     // InterestGallery Associations

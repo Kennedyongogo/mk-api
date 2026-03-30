@@ -189,6 +189,9 @@ const uploadMarketplaceProfilePhoto = upload.single("profile_photo");
 // Middleware for training event image
 const uploadTrainingEventImage = upload.single("training_event_image");
 
+// Middleware for job opportunity image
+const uploadJobOpportunityImage = upload.single("job_opportunity_image");
+
 // Middleware for grant image
 const uploadGrantImage = upload.single("grant_image");
 
@@ -288,6 +291,7 @@ module.exports = {
   uploadProjectImage,
   uploadMarketplaceProfilePhoto,
   uploadTrainingEventImage,
+  uploadJobOpportunityImage,
   uploadGrantImage,
   uploadPartnerLogo,
   uploadListingImage,

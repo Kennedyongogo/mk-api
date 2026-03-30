@@ -29,6 +29,8 @@ const faqRoutes = require("./routes/faqRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const quoteRoutes = require("./routes/quoteRoutes");
 const consultationRoutes = require("./routes/consultationRoutes");
+const serviceRequestRoutes = require("./routes/serviceRequestRoutes");
+const jobOpportunityRoutes = require("./routes/jobOpportunityRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const marketplaceAuthRoutes = require("./routes/marketplaceAuthRoutes");
 const marketplaceProfileRoutes = require("./routes/marketplaceProfileRoutes");
@@ -169,6 +171,12 @@ console.log("✅ /api/quote route registered");
 
 app.use("/api/consultation", consultationRoutes);
 console.log("✅ /api/consultation route registered");
+
+app.use("/api/service-request", serviceRequestRoutes);
+console.log("✅ /api/service-request route registered");
+
+app.use("/api/job-opportunities", jobOpportunityRoutes);
+console.log("✅ /api/job-opportunities route registered");
 
 app.use("/api/newsletter", newsletterRoutes);
 console.log("✅ /api/newsletter route registered");
