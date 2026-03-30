@@ -10,6 +10,17 @@ const {
   logStatusChange,
 } = require("../utils/auditLogger");
 
+function normalizeEmailLike(value) {
+  if (value === undefined || value === null) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  if (raw.toLowerCase().startsWith("mailto:")) {
+    const stripped = raw.slice("mailto:".length).trim();
+    return stripped || null;
+  }
+  return raw;
+}
+
 // Create job opportunity (admin)
 const createJobOpportunity = async (req, res) => {
   try {
@@ -87,7 +98,7 @@ const createJobOpportunity = async (req, res) => {
       imageAltText,
       applyUrl: applyUrl || null,
       attachmentUrl: attachmentUrl || null,
-      contactEmail: contactEmail || null,
+      contactEmail: normalizeEmailLike(contactEmail),
       contactPhone: contactPhone || null,
       tags: tagsArray,
       featured: featured !== undefined ? (featured === true || featured === "true") : false,
@@ -265,6 +276,10 @@ const updateJobOpportunity = async (req, res) => {
     }
     if (updates.isActive !== undefined) {
       updates.isActive = updates.isActive === true || updates.isActive === "true";
+    }
+
+    if (Object.prototype.hasOwnProperty.call(updates, "contactEmail")) {
+      updates.contactEmail = normalizeEmailLike(updates.contactEmail);
     }
 
     await opportunity.update(updates);

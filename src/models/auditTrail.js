@@ -48,6 +48,7 @@ module.exports = (sequelize) => {
           "interest_gallery",
           "project",
           "service",
+          "service_request",
           "faq",
           "contact",
           "system",
@@ -56,6 +57,7 @@ module.exports = (sequelize) => {
           "partner",
           "training_registration",
           "grant_application",
+          "job_opportunity",
           "other"
         ),
         allowNull: false,

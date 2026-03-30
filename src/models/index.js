@@ -1,4 +1,4 @@
-const { sequelize, directSequelize } = require("../config/database");
+const { sequelize } = require("../config/database");
 
 // Import all models
 const AdminUser = require("./adminUser")(sequelize);
